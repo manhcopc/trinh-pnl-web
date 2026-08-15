@@ -335,6 +335,10 @@ h2 {
   border-bottom: 1px solid var(--surface-border);
 }
 
+.sticky-header tr.sub-header th {
+  top: 48px !important; /* Độ cao của hàng đầu tiên */
+}
+
 .sticky-corner {
   z-index: 30 !important;
 }
@@ -450,6 +454,10 @@ h2 {
   box-shadow: 0 -4px 20px rgba(0,0,0,0.03);
 }
 
+.sidebar-logo {
+  display: none;
+}
+
 .nav-item {
   display: flex;
   flex-direction: column;
@@ -488,6 +496,14 @@ h2 {
     padding: 2rem 1.5rem;
     gap: 0.75rem;
     box-shadow: 4px 0 20px rgba(0,0,0,0.02);
+  }
+  .sidebar-logo {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding-bottom: 1.5rem;
+    margin-bottom: 0.5rem;
+    border-bottom: 1px solid rgba(0,0,0,0.05);
   }
   .nav-item { flex-direction: row; justify-content: flex-start; padding: 1rem 1.25rem; gap: 1rem; }
   .nav-item span { font-size: 0.95rem; }

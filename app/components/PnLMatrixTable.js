@@ -125,6 +125,14 @@ export default function PnLMatrixTable({ records, mode, targetMonth, targetBranc
     return col;
   };
 
+  // Hàm tính % so với Doanh Thu của cột
+  const calcPercent = (amount, colKey) => {
+    const revenue = reportData.columnTotals.revenue[colKey];
+    if (!revenue || revenue === 0) return '0%';
+    const pct = (amount / revenue) * 100;
+    return pct.toFixed(1).replace('.0', '') + '%';
+  };
+
   return (
     <div className="glass-panel" style={{ padding: 0, overflow: 'hidden' }}>
       {/* Header Info */}
@@ -141,18 +149,28 @@ export default function PnLMatrixTable({ records, mode, targetMonth, targetBranc
 
       {/* Ma trận */}
       <div className="table-wrapper">
-        <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', minWidth: `${300 + columns.length * 130}px` }}>
+        <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', minWidth: `${300 + columns.length * 180}px` }}>
           <thead className="sticky-header">
             <tr>
-              <th className="sticky-col sticky-corner" style={{ padding: '1rem 1.5rem', color: 'var(--text-secondary)', fontWeight: 600, fontSize: '0.85rem' }}>CHỈ TIÊU</th>
+              <th rowSpan="2" className="sticky-col sticky-corner" style={{ padding: '1rem 1.5rem', color: 'var(--text-secondary)', fontWeight: 600, fontSize: '0.85rem' }}>CHỈ TIÊU</th>
               {columns.map(col => (
-                <th key={col} style={{ padding: '1rem', color: 'var(--text-secondary)', fontWeight: 600, fontSize: '0.85rem', textAlign: 'right', minWidth: '120px' }}>
+                <th colSpan="2" key={col} style={{ height: '48px', padding: '0.75rem 1rem', color: 'var(--text-secondary)', fontWeight: 600, fontSize: '0.85rem', textAlign: 'center', borderBottom: '1px solid var(--surface-border)' }}>
                   {formatColumnHeader(col)}
                 </th>
               ))}
-              <th style={{ padding: '1rem 1.5rem', color: 'var(--text-secondary)', fontWeight: 700, fontSize: '0.85rem', textAlign: 'right', minWidth: '140px' }}>
+              <th colSpan="2" style={{ height: '48px', padding: '0.75rem 1.5rem', color: 'var(--text-secondary)', fontWeight: 700, fontSize: '0.85rem', textAlign: 'center', borderBottom: '1px solid var(--surface-border)' }}>
                 {mode === 'branch_compare' ? 'TỔNG HỆ THỐNG' : 'TỔNG LŨY KẾ'}
               </th>
+            </tr>
+            <tr className="sub-header">
+              {columns.map(col => (
+                <React.Fragment key={`${col}-sub`}>
+                  <th style={{ padding: '0.5rem 1rem', color: 'var(--text-secondary)', fontWeight: 500, fontSize: '0.75rem', textAlign: 'right', minWidth: '100px' }}>SỐ TIỀN</th>
+                  <th style={{ padding: '0.5rem 0.5rem', color: 'var(--text-secondary)', fontWeight: 500, fontSize: '0.75rem', textAlign: 'right', minWidth: '60px' }}>% DT</th>
+                </React.Fragment>
+              ))}
+              <th style={{ padding: '0.5rem 1rem', color: 'var(--text-secondary)', fontWeight: 500, fontSize: '0.75rem', textAlign: 'right', minWidth: '110px' }}>SỐ TIỀN</th>
+              <th style={{ padding: '0.5rem 1.5rem', color: 'var(--text-secondary)', fontWeight: 500, fontSize: '0.75rem', textAlign: 'right', minWidth: '70px' }}>% DT</th>
             </tr>
           </thead>
           <tbody>
@@ -183,12 +201,20 @@ export default function PnLMatrixTable({ records, mode, targetMonth, targetBranc
                       {g.group}
                     </td>
                     {columns.map(col => (
-                      <td key={col} style={{ padding: '1rem', fontWeight: 700, textAlign: 'right', color: groupColor }}>
-                        {groupData.totals[col] !== 0 ? formatCurrency(groupData.totals[col]) : '-'}
-                      </td>
+                      <React.Fragment key={col}>
+                        <td style={{ padding: '1rem', fontWeight: 700, textAlign: 'right', color: groupColor }}>
+                          {groupData.totals[col] !== 0 ? formatCurrency(groupData.totals[col]) : '-'}
+                        </td>
+                        <td style={{ padding: '1rem 0.5rem', fontWeight: 600, fontSize: '0.8rem', textAlign: 'right', color: groupColor, opacity: 0.7 }}>
+                          {groupData.totals[col] !== 0 ? calcPercent(groupData.totals[col], col) : '-'}
+                        </td>
+                      </React.Fragment>
                     ))}
                     <td style={{ padding: '1rem 1.5rem', fontWeight: 800, textAlign: 'right', color: groupColor }}>
                       {formatCurrency(groupData.totals['Tổng'])}
+                    </td>
+                    <td style={{ padding: '1rem 1.5rem 1rem 0.5rem', fontWeight: 700, fontSize: '0.8rem', textAlign: 'right', color: groupColor, opacity: 0.7 }}>
+                      {calcPercent(groupData.totals['Tổng'], 'Tổng')}
                     </td>
                   </tr>
                   
@@ -199,12 +225,20 @@ export default function PnLMatrixTable({ records, mode, targetMonth, targetBranc
                         {item}
                       </td>
                       {columns.map(col => (
-                        <td key={col} style={{ padding: '0.75rem 1rem', textAlign: 'right', fontWeight: 500, fontSize: '0.9rem', color: groupData.items[item][col] === 0 ? 'var(--text-secondary)' : 'var(--text-primary)', opacity: groupData.items[item][col] === 0 ? 0.4 : 1 }}>
-                          {groupData.items[item][col] !== 0 ? formatCurrency(groupData.items[item][col]) : '-'}
-                        </td>
+                        <React.Fragment key={col}>
+                          <td style={{ padding: '0.75rem 1rem', textAlign: 'right', fontWeight: 500, fontSize: '0.9rem', color: groupData.items[item][col] === 0 ? 'var(--text-secondary)' : 'var(--text-primary)', opacity: groupData.items[item][col] === 0 ? 0.4 : 1 }}>
+                            {groupData.items[item][col] !== 0 ? formatCurrency(groupData.items[item][col]) : '-'}
+                          </td>
+                          <td style={{ padding: '0.75rem 0.5rem', textAlign: 'right', fontWeight: 500, fontSize: '0.75rem', color: 'var(--text-secondary)', opacity: groupData.items[item][col] === 0 ? 0.2 : 0.8 }}>
+                            {groupData.items[item][col] !== 0 ? calcPercent(groupData.items[item][col], col) : '-'}
+                          </td>
+                        </React.Fragment>
                       ))}
                       <td style={{ padding: '0.75rem 1.5rem', textAlign: 'right', fontWeight: 600, fontSize: '0.9rem' }}>
                         {formatCurrency(groupData.items[item]['Tổng'])}
+                      </td>
+                      <td style={{ padding: '0.75rem 1.5rem 0.75rem 0.5rem', textAlign: 'right', fontWeight: 500, fontSize: '0.75rem', color: 'var(--text-secondary)', opacity: 0.8 }}>
+                        {calcPercent(groupData.items[item]['Tổng'], 'Tổng')}
                       </td>
                     </tr>
                   ))}
@@ -216,12 +250,20 @@ export default function PnLMatrixTable({ records, mode, targetMonth, targetBranc
             <tr style={{ background: 'rgba(255,255,255,0.02)', borderTop: '2px solid var(--surface-border)' }}>
               <td className="sticky-col" style={{ padding: '1.25rem 1.5rem', fontWeight: 800, fontSize: '1.05rem', background: '#f8fafc' }}>TỔNG DOANH THU</td>
               {columns.map(col => (
-                <td key={col} style={{ padding: '1.25rem 1rem', textAlign: 'right', fontWeight: 800, color: 'var(--revenue-color)' }}>
-                  {formatCurrency(reportData.columnTotals.revenue[col])}
-                </td>
+                <React.Fragment key={col}>
+                  <td style={{ padding: '1.25rem 1rem', textAlign: 'right', fontWeight: 800, color: 'var(--revenue-color)' }}>
+                    {formatCurrency(reportData.columnTotals.revenue[col])}
+                  </td>
+                  <td style={{ padding: '1.25rem 0.5rem', textAlign: 'right', fontWeight: 700, fontSize: '0.85rem', color: 'var(--revenue-color)' }}>
+                    {reportData.columnTotals.revenue[col] > 0 ? '100%' : '0%'}
+                  </td>
+                </React.Fragment>
               ))}
               <td style={{ padding: '1.25rem 1.5rem', textAlign: 'right', fontWeight: 800, color: 'var(--revenue-color)' }}>
                 {formatCurrency(reportData.columnTotals.revenue['Tổng'])}
+              </td>
+              <td style={{ padding: '1.25rem 1.5rem 1.25rem 0.5rem', textAlign: 'right', fontWeight: 700, fontSize: '0.85rem', color: 'var(--revenue-color)' }}>
+                {reportData.columnTotals.revenue['Tổng'] > 0 ? '100%' : '0%'}
               </td>
             </tr>
 
@@ -229,12 +271,20 @@ export default function PnLMatrixTable({ records, mode, targetMonth, targetBranc
             <tr style={{ background: 'rgba(255,255,255,0.02)', borderBottom: '1px solid var(--surface-border)' }}>
               <td className="sticky-col" style={{ padding: '1.25rem 1.5rem', fontWeight: 800, fontSize: '1.05rem', background: '#f8fafc' }}>TỔNG CHI PHÍ</td>
               {columns.map(col => (
-                <td key={col} style={{ padding: '1.25rem 1rem', textAlign: 'right', fontWeight: 800, color: 'var(--expense-color)' }}>
-                  {formatCurrency(reportData.columnTotals.expense[col])}
-                </td>
+                <React.Fragment key={col}>
+                  <td style={{ padding: '1.25rem 1rem', textAlign: 'right', fontWeight: 800, color: 'var(--expense-color)' }}>
+                    {formatCurrency(reportData.columnTotals.expense[col])}
+                  </td>
+                  <td style={{ padding: '1.25rem 0.5rem', textAlign: 'right', fontWeight: 700, fontSize: '0.85rem', color: 'var(--expense-color)', opacity: 0.8 }}>
+                    {calcPercent(reportData.columnTotals.expense[col], col)}
+                  </td>
+                </React.Fragment>
               ))}
               <td style={{ padding: '1.25rem 1.5rem', textAlign: 'right', fontWeight: 800, color: 'var(--expense-color)' }}>
                 {formatCurrency(reportData.columnTotals.expense['Tổng'])}
+              </td>
+              <td style={{ padding: '1.25rem 1.5rem 1.25rem 0.5rem', textAlign: 'right', fontWeight: 700, fontSize: '0.85rem', color: 'var(--expense-color)', opacity: 0.8 }}>
+                {calcPercent(reportData.columnTotals.expense['Tổng'], 'Tổng')}
               </td>
             </tr>
 
@@ -244,12 +294,20 @@ export default function PnLMatrixTable({ records, mode, targetMonth, targetBranc
                 LỢI NHUẬN (EBIT)
               </td>
               {columns.map(col => (
-                <td key={col} style={{ padding: '1.5rem 1rem', textAlign: 'right', fontWeight: 800, fontSize: '1.1rem', color: 'var(--profit-color)' }}>
-                  {formatCurrency(reportData.columnTotals.ebit[col])}
-                </td>
+                <React.Fragment key={col}>
+                  <td style={{ padding: '1.5rem 1rem', textAlign: 'right', fontWeight: 800, fontSize: '1.1rem', color: 'var(--profit-color)' }}>
+                    {formatCurrency(reportData.columnTotals.ebit[col])}
+                  </td>
+                  <td style={{ padding: '1.5rem 0.5rem', textAlign: 'right', fontWeight: 700, fontSize: '0.9rem', color: 'var(--profit-color)', opacity: 0.8 }}>
+                    {calcPercent(reportData.columnTotals.ebit[col], col)}
+                  </td>
+                </React.Fragment>
               ))}
-              <td style={{ padding: '1.5rem', textAlign: 'right', fontWeight: 800, fontSize: '1.1rem', color: 'var(--profit-color)' }}>
+              <td style={{ padding: '1.5rem 1.5rem', textAlign: 'right', fontWeight: 800, fontSize: '1.1rem', color: 'var(--profit-color)' }}>
                 {formatCurrency(reportData.columnTotals.ebit['Tổng'])}
+              </td>
+              <td style={{ padding: '1.5rem 1.5rem 1.5rem 0.5rem', textAlign: 'right', fontWeight: 700, fontSize: '0.9rem', color: 'var(--profit-color)', opacity: 0.8 }}>
+                {calcPercent(reportData.columnTotals.ebit['Tổng'], 'Tổng')}
               </td>
             </tr>
 

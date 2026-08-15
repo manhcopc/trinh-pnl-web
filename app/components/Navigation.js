@@ -67,6 +67,13 @@ export default function Navigation() {
 
   return (
     <nav className="sidebar">
+      <div className="sidebar-logo">
+        <Link href="/">
+          <div style={{ position: 'relative', width: '200px', height: '80px' }}>
+            <img src="/logo-trinh.png" alt="Trịnh Cà Phê" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
+          </div>
+        </Link>
+      </div>
       {navItems.map((item) => (
         <Link 
           key={item.path} 
