@@ -5,7 +5,7 @@ const PNL_CACHE_KEY = 'pnl_transaction_data';
 const PNL_CACHE_TTL = 15 * 60 * 1000; // 15 minutes
 
 export function usePnLData() {
-  const [data, setData] = useState({ records: [], summary: { totalRevenue: 0, totalExpense: 0, netProfit: 0 } });
+  const [data, setData] = useState({ records: [], summary: { totalRevenue: 0, totalExpense: 0, netProfit: 0 }, lastUpdated: null });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
@@ -15,14 +15,15 @@ export function usePnLData() {
       if (!res.ok) throw new Error('Failed to fetch PnL data');
       const apiData = await res.json();
       
+      const now = Date.now();
       const cacheObject = {
         data: apiData,
-        timestamp: Date.now()
+        timestamp: now
       };
       
       // Lưu vào sessionStorage để cache theo phiên trình duyệt
       sessionStorage.setItem(PNL_CACHE_KEY, JSON.stringify(cacheObject));
-      setData(apiData);
+      setData({ ...apiData, lastUpdated: now });
     } catch (err) {
       console.error(err);
       setError('Không thể kết nối máy chủ để lấy dữ liệu Báo cáo.');
@@ -47,7 +48,7 @@ export function usePnLData() {
         
         // Sử dụng cache nếu còn hạn
         if (age < PNL_CACHE_TTL) {
-          setData(parsed.data);
+          setData({ ...parsed.data, lastUpdated: parsed.timestamp });
           setLoading(false);
           return;
         }
@@ -74,6 +75,7 @@ export function usePnLData() {
   return {
     records: data.records || [],
     summary: data.summary || { totalRevenue: 0, totalExpense: 0, netProfit: 0 },
+    lastUpdated: data.lastUpdated,
     loading,
     error,
     refresh: () => loadData(true),

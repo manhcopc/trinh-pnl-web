@@ -18,7 +18,8 @@ export default function ReportPage() {
   const [filters, setFilters] = useState({
     viewMode: 'single', // 'single' | 'branch_compare' | 'trend_analysis'
     month: currentMonth,
-    branch: 'All',
+    branch: 'All', // Dùng cho single và branch_compare
+    selectedBranches: [], // Dùng cho trend_analysis
     selectedMonths: []
   });
 
@@ -29,12 +30,16 @@ export default function ReportPage() {
     return Array.from(months).sort().reverse();
   }, [records]);
 
-  // Khởi tạo selectedMonths khi dữ liệu đã sẵn sàng
+  // Khởi tạo selectedMonths và selectedBranches khi dữ liệu đã sẵn sàng
   useEffect(() => {
     if (availableMonths.length > 0 && filters.selectedMonths.length === 0) {
       setFilters(prev => ({ ...prev, selectedMonths: availableMonths }));
     }
-  }, [availableMonths, filters.selectedMonths.length]);
+    if (branches.length > 0 && filters.selectedBranches.length === 0) {
+      // Mặc định chọn tất cả
+      setFilters(prev => ({ ...prev, selectedBranches: [...branches] }));
+    }
+  }, [availableMonths, branches, filters.selectedMonths.length, filters.selectedBranches.length]);
 
   const handleMonthToggle = (month) => {
     setFilters(prev => {
@@ -43,6 +48,17 @@ export default function ReportPage() {
         return { ...prev, selectedMonths: current.filter(m => m !== month) };
       } else {
         return { ...prev, selectedMonths: [...current, month] };
+      }
+    });
+  };
+
+  const handleBranchToggle = (b) => {
+    setFilters(prev => {
+      const current = prev.selectedBranches || [];
+      if (current.includes(b)) {
+        return { ...prev, selectedBranches: current.filter(br => br !== b) };
+      } else {
+        return { ...prev, selectedBranches: [...current, b] };
       }
     });
   };
@@ -130,8 +146,8 @@ export default function ReportPage() {
           </div>
         )}
 
-        {/* Cột chọn Cơ sở chỉ hiện nếu không phải so sánh cơ sở */}
-        {filters.viewMode !== 'branch_compare' && (
+        {/* Cột chọn Cơ sở dạng Dropdown (Single, Branch Compare) */}
+        {filters.viewMode !== 'trend_analysis' && filters.viewMode !== 'branch_compare' && (
           <div className="form-group" style={{ marginBottom: 0, minWidth: '180px', flex: 1 }}>
             <label style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', marginBottom: '0.25rem', display: 'block' }}>Cơ Sở</label>
             <select 
@@ -144,6 +160,30 @@ export default function ReportPage() {
               <option value="All">-- TẤT CẢ CƠ SỞ --</option>
               {branches.map(b => <option key={b} value={b}>{b}</option>)}
             </select>
+          </div>
+        )}
+
+        {/* Cột tick chọn Cơ sở cho Phân Tích Xu Hướng */}
+        {filters.viewMode === 'trend_analysis' && (
+          <div className="form-group" style={{ marginBottom: 0, minWidth: '250px', flex: 2 }}>
+            <label style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', marginBottom: '0.25rem', display: 'block' }}>Chọn các cơ sở so sánh</label>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.75rem', background: 'rgba(255,255,255,0.8)', padding: '0.75rem', borderRadius: '12px', border: '1px solid rgba(0,0,0,0.1)' }}>
+              {branches.length === 0 ? (
+                <span style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>Không có cơ sở</span>
+              ) : (
+                branches.map(b => (
+                  <label key={b} style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', fontSize: '0.9rem', cursor: 'pointer' }}>
+                    <input 
+                      type="checkbox" 
+                      checked={filters.selectedBranches?.includes(b) || false} 
+                      onChange={() => handleBranchToggle(b)} 
+                      style={{ accentColor: 'var(--primary-color)', width: '16px', height: '16px' }}
+                    />
+                    {b}
+                  </label>
+                ))
+              )}
+            </div>
           </div>
         )}
 
@@ -200,6 +240,7 @@ export default function ReportPage() {
           targetMonth={filters.month} 
           targetBranch={filters.branch} 
           targetMonths={filters.selectedMonths}
+          targetBranches={filters.selectedBranches}
           categoryGroups={categoryGroups}
           masterBranches={branches}
         />

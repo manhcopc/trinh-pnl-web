@@ -2,7 +2,7 @@
 import React, { useState, useMemo } from 'react';
 import { formatCurrency } from '@/lib/utils';
 
-export default function PnLMatrixTable({ records, mode, targetMonth, targetBranch, targetMonths, categoryGroups, masterBranches }) {
+export default function PnLMatrixTable({ records, mode, targetMonth, targetBranch, targetMonths, targetBranches, categoryGroups, masterBranches }) {
   // Mở mặc định các group Thu và COGS
   const defaultOpen = {};
   categoryGroups?.forEach(g => {
@@ -19,26 +19,21 @@ export default function PnLMatrixTable({ records, mode, targetMonth, targetBranc
   // Xác định các Cột (Columns) dựa trên chế độ
   const columns = useMemo(() => {
     if (mode === 'branch_compare') {
-      // Tìm các cơ sở có dữ liệu trong tháng này, hoặc dùng masterBranches
       return masterBranches;
     } else if (mode === 'trend_analysis') {
-      if (targetMonths && targetMonths.length > 0) {
-        // Chỉ lấy các tháng người dùng đã tick chọn
-        return [...targetMonths].sort();
-      }
+      const branchesToUse = targetBranches && targetBranches.length > 0 ? targetBranches : masterBranches;
+      const monthsToUse = targetMonths && targetMonths.length > 0 ? [...targetMonths].sort() : [];
       
-      // Fallback: Tìm các tháng duy nhất có trong dữ liệu
-      const months = new Set();
-      records.forEach(r => {
-        if (targetBranch === 'All' || r.branch === targetBranch) {
-          if (r.date) months.add(r.date);
-        }
+      const cols = [];
+      monthsToUse.forEach(m => {
+        branchesToUse.forEach(b => {
+          cols.push(`${m}|${b}`);
+        });
       });
-      // Sắp xếp thời gian tăng dần
-      return Array.from(months).sort();
+      return cols;
     }
     return [];
-  }, [mode, masterBranches, records, targetBranch]);
+  }, [mode, masterBranches, targetMonths, targetBranches]);
 
   // Pivot Dữ liệu
   const reportData = useMemo(() => {
@@ -79,8 +74,9 @@ export default function PnLMatrixTable({ records, mode, targetMonth, targetBranc
         if (r.date !== targetMonth) return; // Chỉ lấy tháng được chọn
         colKey = r.branch;
       } else if (mode === 'trend_analysis') {
-        if (targetBranch !== 'All' && r.branch !== targetBranch) return; // Chỉ lấy cơ sở được chọn
-        colKey = r.date;
+        if (targetBranches && targetBranches.length > 0 && !targetBranches.includes(r.branch)) return; // Chỉ lấy cơ sở được chọn
+        if (targetMonths && targetMonths.length > 0 && !targetMonths.includes(r.date)) return;
+        colKey = `${r.date}|${r.branch}`;
       }
 
       // Nếu cột không tồn tại trong columns (ví dụ branch bị xóa nhưng còn data cũ), ta có thể bỏ qua hoặc gom vào Khác
@@ -119,8 +115,10 @@ export default function PnLMatrixTable({ records, mode, targetMonth, targetBranc
   // Format header cột
   const formatColumnHeader = (col) => {
     if (mode === 'trend_analysis') {
-      const [year, month] = col.split('-');
-      return `T${month}/${year}`;
+      const [datePart, branchPart] = col.split('|');
+      if (!datePart) return col;
+      const [year, month] = datePart.split('-');
+      return `T${month}/${year} - ${branchPart}`;
     }
     return col;
   };
@@ -143,7 +141,7 @@ export default function PnLMatrixTable({ records, mode, targetMonth, targetBranc
         <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem' }}>
           {mode === 'branch_compare' 
             ? `Tháng: ${targetMonth || 'Chưa chọn'}` 
-            : `Cơ sở: ${targetBranch === 'All' ? 'Toàn Hệ Thống' : targetBranch}`}
+            : `Cơ sở: ${targetBranches?.length > 0 ? targetBranches.join(', ') : 'Toàn Hệ Thống'}`}
         </p>
       </div>
 
