@@ -43,9 +43,18 @@ export default function AddRecordForm({ onRecordAdded }) {
     if (errorMsg) setErrorMsg('');
   };
 
-  const handleAmountChange = (category, value) => {
-    if (value !== '' && isNaN(Number(value))) return;
-    setAmounts(prev => ({ ...prev, [category]: value }));
+  const handleAmountChange = (category, rawValue) => {
+    // Remove all non-numeric characters
+    const numericValue = rawValue.replace(/\D/g, '');
+    
+    if (numericValue === '') {
+      setAmounts(prev => ({ ...prev, [category]: '' }));
+      return;
+    }
+    
+    // Format with commas (e.g., 1,000,000)
+    const formattedValue = Number(numericValue).toLocaleString('en-US');
+    setAmounts(prev => ({ ...prev, [category]: formattedValue }));
   };
 
   // Auto-fill logic when month and branch change
@@ -64,7 +73,7 @@ export default function AddRecordForm({ onRecordAdded }) {
           
           if (data.records && data.records.length > 0) {
             data.records.forEach(r => {
-              newAmounts[r.category] = r.amount.toString();
+              newAmounts[r.category] = Number(r.amount).toLocaleString('en-US');
               if (r.note && !existingNote) existingNote = r.note;
             });
             setSuccessMsg('Đã tải số liệu cũ để chỉnh sửa.');
@@ -91,7 +100,8 @@ export default function AddRecordForm({ onRecordAdded }) {
     
     categoryGroups.forEach(group => {
       group.items.forEach(cat => {
-        const val = Number(amounts[cat]) || 0;
+        const rawStr = amounts[cat] || '0';
+        const val = Number(rawStr.replace(/,/g, ''));
         if (group.type === 'Thu') rev += val;
         else if (group.type === 'Chi') exp += val;
       });
@@ -113,7 +123,8 @@ export default function AddRecordForm({ onRecordAdded }) {
     const records = [];
     categoryGroups.forEach(group => {
       group.items.forEach(cat => {
-        const val = Number(amounts[cat]);
+        const rawStr = amounts[cat] || '0';
+        const val = Number(rawStr.replace(/,/g, ''));
         if (val && val !== 0) {
           records.push({
             category: cat,
