@@ -3,6 +3,9 @@ import { useState, useMemo } from 'react';
 import { formatCurrency } from '@/lib/utils';
 import { usePnLData } from '@/hooks/usePnLData';
 import { useMasterData } from '@/hooks/useMasterData';
+import {
+  ResponsiveContainer, ComposedChart, Bar, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend
+} from 'recharts';
 
 export default function Home() {
   const { records, lastUpdated, loading, error, refresh } = usePnLData();
@@ -16,7 +19,7 @@ export default function Home() {
   const availableMonths = useMemo(() => {
     const mSet = new Set();
     records.forEach(r => { if (r.date) mSet.add(r.date) });
-    return Array.from(mSet).sort().reverse();
+    return Array.from(mSet).sort().reverse(); // Từ mới nhất đến cũ nhất
   }, [records]);
 
   // Hiển thị thời gian cập nhật
@@ -27,7 +30,7 @@ export default function Home() {
     return `${diff} phút trước`;
   }, [lastUpdated]);
 
-  const getPreviousMonth = (monthStr) => {
+  const getPreviousMonthRaw = (monthStr) => {
     if (!monthStr) return null;
     const [year, month] = monthStr.split('-');
     let m = parseInt(month, 10) - 1;
@@ -36,11 +39,23 @@ export default function Home() {
     return `${y}-${m.toString().padStart(2, '0')}`;
   };
 
-  const prevMonth = getPreviousMonth(targetMonth);
+  // Logic chuyển tháng động
+  const currentMonthIndex = availableMonths.indexOf(targetMonth);
+  const hasNextMonth = currentMonthIndex > 0;
+  const hasPrevMonth = currentMonthIndex !== -1 && currentMonthIndex < availableMonths.length - 1;
+
+  const nextMonth = hasNextMonth ? availableMonths[currentMonthIndex - 1] : null;
+  const prevMonth = hasPrevMonth ? availableMonths[currentMonthIndex + 1] : null;
+
+  const handlePrevMonth = () => { if (hasPrevMonth) setTargetMonth(prevMonth); };
+  const handleNextMonth = () => { if (hasNextMonth) setTargetMonth(nextMonth); };
 
   // Tính toán dữ liệu tổng hợp
   const dashboardData = useMemo(() => {
-    let rev = 0, exp = 0, prevRev = 0, prevExp = 0;
+    let rev = 0, exp = 0;
+    let prevRev = 0, prevExp = 0;
+    let nextRev = 0, nextExp = 0;
+    
     const expenseByCategory = {};
     const revenueByBranchOrCat = {};
     const monthlyTrend = {}; 
@@ -50,8 +65,8 @@ export default function Home() {
     for (let i = 0; i < 6; i++) {
       if (currM) {
         last6Months.unshift(currM);
-        monthlyTrend[currM] = { rev: 0, exp: 0, ebit: 0 };
-        currM = getPreviousMonth(currM);
+        monthlyTrend[currM] = { month: currM, rev: 0, exp: 0, ebit: 0 };
+        currM = getPreviousMonthRaw(currM);
       }
     }
 
@@ -61,11 +76,12 @@ export default function Home() {
       const amt = Number(r.amount);
       const isCurrentMonth = r.date === targetMonth;
       const isPrevMonth = r.date === prevMonth;
+      const isNextMonth = r.date === nextMonth;
       
       const group = categoryGroups?.find(g => g.items.includes(r.category));
       if (!group) return;
 
-      // Sparkline (6 tháng)
+      // Dữ liệu cho biểu đồ (6 tháng gần nhất)
       if (monthlyTrend[r.date]) {
         if (group.type === 'Thu') {
           monthlyTrend[r.date].rev += amt;
@@ -76,7 +92,6 @@ export default function Home() {
         }
       }
 
-      // Tháng hiện tại & Tháng trước
       if (isCurrentMonth) {
         if (group.type === 'Thu') {
           rev += amt;
@@ -92,39 +107,52 @@ export default function Home() {
       } else if (isPrevMonth) {
         if (group.type === 'Thu') prevRev += amt;
         else if (group.type === 'Chi') prevExp += amt;
+      } else if (isNextMonth) {
+        if (group.type === 'Thu') nextRev += amt;
+        else if (group.type === 'Chi') nextExp += amt;
       }
     });
 
     const ebit = rev - exp;
     const prevEbit = prevRev - prevExp;
+    const nextEbit = nextRev - nextExp;
 
-    const calcDelta = (cur, prev) => {
-      if (prev === 0 && cur === 0) return 0;
-      if (prev === 0) return 100;
-      return ((cur - prev) / prev) * 100;
+    const calcDelta = (cur, compareTo) => {
+      if (compareTo === 0 && cur === 0) return 0;
+      if (compareTo === 0) return 100;
+      return ((cur - compareTo) / Math.abs(compareTo)) * 100;
     };
 
     return {
       rev, exp, ebit,
-      deltaRev: calcDelta(rev, prevRev),
-      deltaExp: calcDelta(exp, prevExp),
-      deltaEbit: calcDelta(ebit, prevEbit),
+      deltaRevPrev: prevMonth ? calcDelta(rev, prevRev) : 0,
+      deltaExpPrev: prevMonth ? calcDelta(exp, prevExp) : 0,
+      deltaEbitPrev: prevMonth ? calcDelta(ebit, prevEbit) : 0,
+      
+      deltaRevNext: nextMonth ? calcDelta(rev, nextRev) : 0,
+      deltaExpNext: nextMonth ? calcDelta(exp, nextExp) : 0,
+      deltaEbitNext: nextMonth ? calcDelta(ebit, nextEbit) : 0,
+      
       margin: rev > 0 ? (ebit / rev) * 100 : 0,
       expenseByCategory: Object.entries(expenseByCategory).sort((a,b) => b[1] - a[1]).slice(0, 5),
       revenueByBranchOrCat: Object.entries(revenueByBranchOrCat).sort((a,b) => b[1] - a[1]).slice(0, 5),
-      sparkline: last6Months.map(m => monthlyTrend[m]),
-      sparklineMonths: last6Months
+      chartData: last6Months.map(m => ({
+        name: m,
+        'Doanh Thu': monthlyTrend[m].rev,
+        'Chi Phí': monthlyTrend[m].exp,
+        'EBIT': monthlyTrend[m].ebit
+      }))
     };
-  }, [records, targetBranch, targetMonth, categoryGroups, prevMonth]);
+  }, [records, targetBranch, targetMonth, categoryGroups, prevMonth, nextMonth]);
 
   // Cảnh báo (Alerts)
   const alerts = useMemo(() => {
     const list = [];
     if (!records.length || !categoryGroups) return list;
 
-    const m1 = getPreviousMonth(targetMonth);
-    const m2 = getPreviousMonth(m1);
-    const m3 = getPreviousMonth(m2);
+    const m1 = getPreviousMonthRaw(targetMonth);
+    const m2 = getPreviousMonthRaw(m1);
+    const m3 = getPreviousMonthRaw(m2);
     
     const catStats = {};
     records.forEach(r => {
@@ -151,48 +179,30 @@ export default function Home() {
       }
     });
 
-    if (dashboardData.deltaEbit < 0 && dashboardData.ebit > 0) {
-      list.push({ type: 'warning', msg: `Lợi nhuận (EBIT) sụt giảm ${Math.abs(dashboardData.deltaEbit).toFixed(1)}% so với tháng trước.` });
+    if (dashboardData.deltaEbitPrev < 0 && dashboardData.ebit > 0) {
+      list.push({ type: 'warning', msg: `Lợi nhuận (EBIT) sụt giảm ${Math.abs(dashboardData.deltaEbitPrev).toFixed(1)}% so với tháng trước.` });
     }
 
     return list;
-  }, [records, targetBranch, targetMonth, categoryGroups, dashboardData.deltaEbit, dashboardData.ebit]);
+  }, [records, targetBranch, targetMonth, categoryGroups, dashboardData.deltaEbitPrev, dashboardData.ebit]);
 
-  // Component Sparkline
-  const renderSparkline = (dataArr, key, color) => {
-    if (dataArr.length === 0) return null;
-    const values = dataArr.map(d => d[key]);
-    const max = Math.max(...values, 1);
-    const min = Math.min(...values, 0);
-    const range = max - min || 1;
-    const height = 40;
-    const width = 120;
-    
-    const points = values.map((val, i) => {
-      const x = (i / (values.length - 1)) * width;
-      const y = height - ((val - min) / range) * height * 0.8 - height * 0.1;
-      return `${x},${y}`;
-    }).join(' ');
-
-    return (
-      <svg width="100%" height={height} viewBox={`0 0 ${width} ${height}`} preserveAspectRatio="none" style={{ marginTop: '0.5rem', overflow: 'visible' }}>
-        <polyline points={points} fill="none" stroke={color} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
-        {/* Điểm nhấn ở cuối */}
-        <circle cx={width} cy={height - ((values[values.length-1] - min) / range) * height * 0.8 - height * 0.1} r="3" fill={color} />
-      </svg>
-    );
-  };
-
-  const renderDelta = (delta, isExpense = false) => {
+  const renderDelta = (delta, isExpense = false, label) => {
     if (delta === 0) return null;
     const isGood = isExpense ? delta < 0 : delta > 0;
     const color = isGood ? 'var(--revenue-color)' : 'var(--expense-color)';
     const sign = delta > 0 ? '↑' : '↓';
     return (
-      <span style={{ color, fontSize: '0.85rem', fontWeight: 600, marginLeft: '0.5rem' }}>
-        {sign} {Math.abs(delta).toFixed(1)}%
-      </span>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '0.4rem', paddingTop: '0.4rem', borderTop: '1px dashed rgba(255,255,255,0.1)' }}>
+        <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>{label}</span>
+        <span style={{ color, fontSize: '0.85rem', fontWeight: 600 }}>
+          {sign} {Math.abs(delta).toFixed(1)}%
+        </span>
+      </div>
     );
+  };
+
+  const customTooltipFormatter = (value) => {
+    return [formatCurrency(value), ''];
   };
 
   return (
@@ -204,7 +214,7 @@ export default function Home() {
       
       {/* Tầng 1: Context Bar */}
       <div className="glass-panel animate-fade-in" style={{ padding: '0.75rem 1.5rem', marginBottom: '1.5rem', display: 'flex', flexWrap: 'wrap', gap: '1rem', alignItems: 'center', justifyContent: 'space-between' }}>
-        <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap' }}>
+        <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap', alignItems: 'center' }}>
           <select 
             value={targetBranch} 
             onChange={e => setTargetBranch(e.target.value)}
@@ -214,14 +224,32 @@ export default function Home() {
             {branches?.map(b => <option key={b} value={b}>{b}</option>)}
           </select>
 
-          <select 
-            value={targetMonth} 
-            onChange={e => setTargetMonth(e.target.value)}
-            className="form-control" style={{ width: 'auto', minWidth: '150px', padding: '0.5rem' }}
-          >
-            <option value={currentMonth}>Tháng {currentMonth}</option>
-            {availableMonths.map(m => m !== currentMonth && <option key={m} value={m}>Tháng {m}</option>)}
-          </select>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+            <button 
+              onClick={handlePrevMonth} 
+              disabled={!hasPrevMonth}
+              className="btn" 
+              style={{ padding: '0.4rem 0.8rem', background: 'rgba(255,255,255,0.1)', opacity: hasPrevMonth ? 1 : 0.3 }}
+            >
+              &lt; Trước
+            </button>
+            <select 
+              value={targetMonth} 
+              onChange={e => setTargetMonth(e.target.value)}
+              className="form-control" style={{ width: 'auto', minWidth: '130px', padding: '0.5rem', textAlign: 'center' }}
+            >
+              {availableMonths.length === 0 && <option value={currentMonth}>Tháng {currentMonth}</option>}
+              {availableMonths.map(m => <option key={m} value={m}>Tháng {m}</option>)}
+            </select>
+            <button 
+              onClick={handleNextMonth} 
+              disabled={!hasNextMonth}
+              className="btn" 
+              style={{ padding: '0.4rem 0.8rem', background: 'rgba(255,255,255,0.1)', opacity: hasNextMonth ? 1 : 0.3 }}
+            >
+              Sau &gt;
+            </button>
+          </div>
         </div>
         
         <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
@@ -240,47 +268,46 @@ export default function Home() {
         <div className="spinner" style={{ margin: '3rem auto' }}></div>
       ) : (
         <>
-          {/* Tầng 2 & 4: KPI Cards + Sparkline */}
+          {/* Tầng 2: KPI Cards */}
           <div className="summary-cards animate-fade-in" style={{ animationDelay: '0.1s' }}>
-            <div className="glass-panel summary-card revenue" style={{ padding: '1.5rem', position: 'relative', overflow: 'hidden' }}>
+            <div className="glass-panel summary-card revenue" style={{ padding: '1.5rem', display: 'flex', flexDirection: 'column' }}>
               <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', fontWeight: 600 }}>TỔNG DOANH THU</p>
               <h3 style={{ fontSize: '1.75rem', margin: '0.5rem 0', color: 'var(--revenue-color)' }}>
                 {formatCurrency(dashboardData.rev)}
               </h3>
-              <div>
-                <span style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>So với T{prevMonth ? prevMonth.split('-')[1] : 'trước'}</span>
-                {renderDelta(dashboardData.deltaRev, false)}
-              </div>
-              <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, opacity: 0.4 }}>
-                {renderSparkline(dashboardData.sparkline, 'rev', 'var(--revenue-color)')}
+              <div style={{ marginTop: 'auto' }}>
+                {prevMonth && renderDelta(dashboardData.deltaRevPrev, false, `So với T${prevMonth.split('-')[1]}`)}
+                {nextMonth && renderDelta(dashboardData.deltaRevNext, false, `So với T${nextMonth.split('-')[1]}`)}
+                {!prevMonth && !nextMonth && <span style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', marginTop: '0.4rem', display: 'block' }}>Không có data so sánh</span>}
               </div>
             </div>
             
-            <div className="glass-panel summary-card expense" style={{ padding: '1.5rem', position: 'relative', overflow: 'hidden' }}>
+            <div className="glass-panel summary-card expense" style={{ padding: '1.5rem', display: 'flex', flexDirection: 'column' }}>
               <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', fontWeight: 600 }}>TỔNG CHI PHÍ</p>
               <h3 style={{ fontSize: '1.75rem', margin: '0.5rem 0', color: 'var(--expense-color)' }}>
                 {formatCurrency(dashboardData.exp)}
               </h3>
-              <div>
-                <span style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>So với T{prevMonth ? prevMonth.split('-')[1] : 'trước'}</span>
-                {renderDelta(dashboardData.deltaExp, true)}
-              </div>
-              <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, opacity: 0.3 }}>
-                {renderSparkline(dashboardData.sparkline, 'exp', 'var(--expense-color)')}
+              <div style={{ marginTop: 'auto' }}>
+                {prevMonth && renderDelta(dashboardData.deltaExpPrev, true, `So với T${prevMonth.split('-')[1]}`)}
+                {nextMonth && renderDelta(dashboardData.deltaExpNext, true, `So với T${nextMonth.split('-')[1]}`)}
+                {!prevMonth && !nextMonth && <span style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', marginTop: '0.4rem', display: 'block' }}>Không có data so sánh</span>}
               </div>
             </div>
             
-            <div className="glass-panel summary-card profit" style={{ padding: '1.5rem', position: 'relative', overflow: 'hidden' }}>
-              <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', fontWeight: 600 }}>LỢI NHUẬN (EBIT)</p>
+            <div className="glass-panel summary-card profit" style={{ padding: '1.5rem', display: 'flex', flexDirection: 'column' }}>
+              <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', fontWeight: 600, display: 'flex', justifyContent: 'space-between' }}>
+                <span>LỢI NHUẬN (EBIT)</span>
+                <span style={{ fontSize: '0.75rem', color: 'var(--profit-color)', background: 'rgba(56, 189, 248, 0.1)', padding: '2px 6px', borderRadius: '4px' }}>
+                  Biên: {dashboardData.margin.toFixed(1)}%
+                </span>
+              </p>
               <h3 style={{ fontSize: '1.75rem', margin: '0.5rem 0', color: 'var(--profit-color)' }}>
                 {formatCurrency(dashboardData.ebit)}
               </h3>
-              <div>
-                <span style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>Biên LN: <strong style={{ color: 'var(--profit-color)' }}>{dashboardData.margin.toFixed(1)}%</strong></span>
-                {renderDelta(dashboardData.deltaEbit, false)}
-              </div>
-              <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, opacity: 0.4 }}>
-                {renderSparkline(dashboardData.sparkline, 'ebit', 'var(--profit-color)')}
+              <div style={{ marginTop: 'auto' }}>
+                {prevMonth && renderDelta(dashboardData.deltaEbitPrev, false, `So với T${prevMonth.split('-')[1]}`)}
+                {nextMonth && renderDelta(dashboardData.deltaEbitNext, false, `So với T${nextMonth.split('-')[1]}`)}
+                {!prevMonth && !nextMonth && <span style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', marginTop: '0.4rem', display: 'block' }}>Không có data so sánh</span>}
               </div>
             </div>
           </div>
@@ -334,9 +361,34 @@ export default function Home() {
             </div>
           </div>
 
+          {/* Tầng 4: Biểu đồ xu hướng */}
+          <div className="animate-fade-in glass-panel" style={{ animationDelay: '0.3s', marginTop: '1.5rem', padding: '1.5rem' }}>
+             <h3 style={{ fontSize: '1.1rem', marginBottom: '1.5rem', fontWeight: 600 }}>Biểu đồ Xu hướng (6 Tháng gần nhất)</h3>
+             {dashboardData.chartData.length === 0 ? <p style={{ color: 'var(--text-secondary)' }}>Chưa đủ dữ liệu biểu đồ</p> : (
+               <div style={{ width: '100%', height: '350px' }}>
+                 <ResponsiveContainer width="100%" height="100%">
+                   <ComposedChart data={dashboardData.chartData} margin={{ top: 20, right: 20, bottom: 20, left: 20 }}>
+                     <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.1)" vertical={false} />
+                     <XAxis dataKey="name" stroke="var(--text-secondary)" fontSize={12} axisLine={false} tickLine={false} />
+                     <YAxis yAxisId="left" stroke="var(--text-secondary)" fontSize={12} axisLine={false} tickLine={false} tickFormatter={(val) => (val/1000000).toFixed(0) + 'tr'} />
+                     <Tooltip 
+                       formatter={customTooltipFormatter}
+                       contentStyle={{ backgroundColor: 'rgba(15, 23, 42, 0.95)', borderColor: 'rgba(255,255,255,0.1)', borderRadius: '8px', color: '#fff' }}
+                       itemStyle={{ fontSize: '0.9rem' }}
+                     />
+                     <Legend wrapperStyle={{ paddingTop: '20px' }} />
+                     <Bar yAxisId="left" dataKey="Doanh Thu" fill="var(--revenue-color)" radius={[4, 4, 0, 0]} maxBarSize={50} />
+                     <Bar yAxisId="left" dataKey="Chi Phí" fill="var(--expense-color)" radius={[4, 4, 0, 0]} maxBarSize={50} />
+                     <Line yAxisId="left" type="monotone" dataKey="EBIT" stroke="var(--profit-color)" strokeWidth={3} dot={{ r: 4, strokeWidth: 2 }} activeDot={{ r: 6 }} />
+                   </ComposedChart>
+                 </ResponsiveContainer>
+               </div>
+             )}
+          </div>
+
           {/* Tầng 5: Alerts */}
           {alerts.length > 0 && (
-            <div className="animate-fade-in" style={{ animationDelay: '0.3s', marginTop: '1.5rem' }}>
+            <div className="animate-fade-in" style={{ animationDelay: '0.4s', marginTop: '1.5rem' }}>
               <h3 style={{ fontSize: '1.1rem', marginBottom: '1rem', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                 <span style={{ color: 'var(--expense-color)' }}>⚠️</span> Cảnh báo & Việc cần chú ý
               </h3>
