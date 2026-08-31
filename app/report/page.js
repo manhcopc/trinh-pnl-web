@@ -262,10 +262,21 @@ export default function ReportPage() {
             <div className="form-group" style={{ marginBottom: 0, minWidth: '250px', flex: 2 }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.25rem' }}>
                 <label style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', margin: 0 }}>Chọn các cơ sở so sánh</label>
-                <div style={{ fontSize: '0.75rem', display: 'flex', gap: '0.5rem' }}>
-                  <button onClick={() => setFilters(prev => ({ ...prev, selectedBranches: [...branches] }))} style={{ color: 'var(--primary-color)', background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}>Tất cả</button>
-                  <span style={{ color: 'var(--surface-border)' }}>|</span>
-                  <button onClick={() => setFilters(prev => ({ ...prev, selectedBranches: [] }))} style={{ color: 'var(--text-secondary)', background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}>Bỏ chọn</button>
+                <div style={{ display: 'flex', gap: '0.5rem' }}>
+                  <button 
+                    onClick={() => setFilters(prev => ({ ...prev, selectedBranches: [...branches] }))} 
+                    className="btn"
+                    style={{ padding: '0.3rem 0.6rem', fontSize: '0.75rem', background: 'rgba(245, 158, 11, 0.1)', color: '#f59e0b', border: '1px solid rgba(245, 158, 11, 0.3)', minWidth: '60px' }}
+                  >
+                    <FaCheckDouble style={{ display: 'inline', marginRight: '4px' }} /> Tất cả
+                  </button>
+                  <button 
+                    onClick={() => setFilters(prev => ({ ...prev, selectedBranches: [] }))} 
+                    className="btn"
+                    style={{ padding: '0.3rem 0.6rem', fontSize: '0.75rem', background: 'rgba(255, 255, 255, 0.05)', color: 'var(--text-secondary)', border: '1px solid var(--surface-border)', minWidth: '60px' }}
+                  >
+                    <FaRegSquare style={{ display: 'inline', marginRight: '4px' }} /> Bỏ chọn
+                  </button>
                 </div>
               </div>
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.75rem', background: 'rgba(255,255,255,0.02)', padding: '0.75rem', borderRadius: '8px', border: '1px solid var(--surface-border)' }}>
@@ -291,10 +302,21 @@ export default function ReportPage() {
             <div className="form-group" style={{ marginBottom: 0, minWidth: '250px', flex: 2 }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.25rem' }}>
                 <label style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', margin: 0 }}>Chọn các tháng hiển thị</label>
-                <div style={{ fontSize: '0.75rem', display: 'flex', gap: '0.5rem' }}>
-                  <button onClick={() => setFilters(prev => ({ ...prev, selectedMonths: availableMonths }))} style={{ color: 'var(--primary-color)', background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}>Tất cả</button>
-                  <span style={{ color: 'var(--surface-border)' }}>|</span>
-                  <button onClick={() => setFilters(prev => ({ ...prev, selectedMonths: [] }))} style={{ color: 'var(--text-secondary)', background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}>Bỏ chọn</button>
+                <div style={{ display: 'flex', gap: '0.5rem' }}>
+                  <button 
+                    onClick={() => setFilters(prev => ({ ...prev, selectedMonths: availableMonths }))} 
+                    className="btn"
+                    style={{ padding: '0.3rem 0.6rem', fontSize: '0.75rem', background: 'rgba(59, 130, 246, 0.1)', color: '#3b82f6', border: '1px solid rgba(59, 130, 246, 0.3)', minWidth: '60px' }}
+                  >
+                    <FaCheckDouble style={{ display: 'inline', marginRight: '4px' }} /> Tất cả
+                  </button>
+                  <button 
+                    onClick={() => setFilters(prev => ({ ...prev, selectedMonths: [] }))} 
+                    className="btn"
+                    style={{ padding: '0.3rem 0.6rem', fontSize: '0.75rem', background: 'rgba(255, 255, 255, 0.05)', color: 'var(--text-secondary)', border: '1px solid var(--surface-border)', minWidth: '60px' }}
+                  >
+                    <FaRegSquare style={{ display: 'inline', marginRight: '4px' }} /> Bỏ chọn
+                  </button>
                 </div>
               </div>
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.75rem', background: 'rgba(255,255,255,0.02)', padding: '0.75rem', borderRadius: '8px', border: '1px solid var(--surface-border)' }}>
