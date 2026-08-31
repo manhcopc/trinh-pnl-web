@@ -18,7 +18,7 @@ export default function ReportPage() {
   
   const [filters, setFilters] = useState({
     viewMode: 'single', // 'single' | 'branch_compare' | 'trend_analysis' | 'custom_compare'
-    month: currentMonth,
+    month: '', // Khởi tạo rỗng, sẽ gán sau khi có dữ liệu
     branch: 'All', // Dùng cho single, branch_compare và làm Mốc Gốc (Base Target)
     selectedBranches: [], // Dùng cho trend_analysis
     selectedMonths: []
@@ -29,6 +29,7 @@ export default function ReportPage() {
 
   // Extract unique months from records for the Trend Analysis filter if needed
   const availableMonths = useMemo(() => {
+    if (!records) return [];
     const months = new Set();
     records.forEach(r => { if (r.date) months.add(r.date); });
     return Array.from(months).sort().reverse();
@@ -38,15 +39,21 @@ export default function ReportPage() {
 
   // Khởi tạo selectedMonths và selectedBranches khi dữ liệu đã sẵn sàng
   useEffect(() => {
-    if (!isInitialized.current && availableMonths.length > 0 && branches.length > 0) {
+    if (!isInitialized.current && availableMonths.length > 0 && branches?.length > 0) {
+      let defaultMonth = currentMonth;
+      if (!availableMonths.includes(currentMonth)) {
+        defaultMonth = availableMonths[0]; // Lấy tháng mới nhất
+      }
+
       setFilters(prev => ({ 
         ...prev, 
+        month: defaultMonth,
         selectedMonths: availableMonths,
         selectedBranches: [...branches]
       }));
       isInitialized.current = true;
     }
-  }, [availableMonths, branches]);
+  }, [availableMonths, branches, currentMonth]);
 
   const handleMonthToggle = (month) => {
     setFilters(prev => {

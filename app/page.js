@@ -13,7 +13,7 @@ export default function Home() {
 
   const currentMonth = new Date().toISOString().slice(0, 7);
   const [targetBranch, setTargetBranch] = useState('All');
-  const [targetMonth, setTargetMonth] = useState(currentMonth);
+  const [targetMonth, setTargetMonth] = useState('');
 
   // Mảng các tháng có dữ liệu
   const availableMonths = useMemo(() => {
@@ -21,6 +21,17 @@ export default function Home() {
     records.forEach(r => { if (r.date) mSet.add(r.date) });
     return Array.from(mSet).sort().reverse(); // Từ mới nhất đến cũ nhất
   }, [records]);
+
+  // Tự động gán tháng khi dữ liệu tải xong
+  useEffect(() => {
+    if (availableMonths.length > 0 && !targetMonth) {
+      if (availableMonths.includes(currentMonth)) {
+        setTargetMonth(currentMonth);
+      } else {
+        setTargetMonth(availableMonths[0]); // Lấy tháng mới nhất có dữ liệu
+      }
+    }
+  }, [availableMonths, currentMonth, targetMonth]);
 
   // Hiển thị thời gian cập nhật
   const timeAgo = useMemo(() => {
