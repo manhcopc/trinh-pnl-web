@@ -1,5 +1,5 @@
 'use client';
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect, useRef } from 'react';
 import { formatCurrency } from '@/lib/utils';
 
 export default function PnLMatrixTable({ records, mode, targetMonth, targetBranch, targetMonths, targetBranches, compareTargets, categoryGroups, masterBranches }) {
@@ -216,6 +216,25 @@ export default function PnLMatrixTable({ records, mode, targetMonth, targetBranc
     return 2; // SỐ TIỀN | % DT
   };
 
+  const headerRef = useRef(null);
+  const tableWrapperRef = useRef(null);
+
+  useEffect(() => {
+    if (!headerRef.current || !tableWrapperRef.current) return;
+    const observer = new ResizeObserver((entries) => {
+      for (let entry of entries) {
+        if (entry.target === headerRef.current) {
+          const height = entry.target.getBoundingClientRect().height;
+          tableWrapperRef.current.style.setProperty('--first-row-height', `${height}px`);
+        }
+      }
+    });
+    observer.observe(headerRef.current);
+    return () => observer.disconnect();
+  }, [columns]);
+
+  if (!records || records.length === 0) return null;
+
   return (
     <div className="glass-panel animate-fade-in" style={{ padding: 0, overflow: 'hidden' }}>
       {/* Header Info */}
@@ -233,11 +252,11 @@ export default function PnLMatrixTable({ records, mode, targetMonth, targetBranc
       </div>
 
       {/* Ma trận */}
-      <div className="table-wrapper">
+      <div className="table-wrapper" ref={tableWrapperRef}>
         <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', minWidth: `${300 + columns.length * (mode === 'custom_compare' ? 220 : 180)}px` }}>
           <thead className="sticky-header">
-            <tr>
-              <th rowSpan="2" className="sticky-col sticky-corner" style={{ padding: '0.75rem 1rem', color: 'var(--text-secondary)', fontWeight: 600, fontSize: '0.85rem', height: '48px', boxSizing: 'border-box' }}>CHỈ TIÊU</th>
+            <tr ref={headerRef}>
+              <th rowSpan="2" className="sticky-col sticky-corner" style={{ padding: '1rem 1.5rem', color: 'var(--text-secondary)', fontWeight: 600, fontSize: '0.85rem' }}>CHỈ TIÊU</th>
               {columns.map(col => (
                 <th colSpan={getColSpan(col)} key={col} style={{ height: '48px', padding: '0.75rem 1rem', color: col === 'base' ? 'var(--primary-color)' : 'var(--text-secondary)', fontWeight: col === 'base' ? 700 : 600, fontSize: '0.85rem', textAlign: 'center', borderBottom: '1px solid var(--surface-border)', borderLeft: col !== 'base' ? '1px dashed rgba(255,255,255,0.1)' : 'none' }}>
                   {formatColumnHeader(col)}
