@@ -1,5 +1,6 @@
 'use client';
 import { useState, useEffect, useMemo, useRef } from 'react';
+import { FaFilter, FaPlus, FaTrash, FaTable, FaChartLine, FaColumns, FaExchangeAlt, FaCheckDouble, FaRegSquare } from 'react-icons/fa';
 import { useMasterData } from '@/hooks/useMasterData';
 import PnLReportTable from '../components/PnLReportTable';
 import PnLMatrixTable from '../components/PnLMatrixTable';
