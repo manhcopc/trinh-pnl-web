@@ -3,9 +3,12 @@ import { getMasterData, addBranch, addCategory } from '@/lib/googleSheetsHelper'
 
 export const dynamic = 'force-dynamic';
 
-export async function GET() {
+export async function GET(request) {
   try {
-    const data = await getMasterData();
+    const { searchParams } = new URL(request.url);
+    const refresh = searchParams.get('refresh') === 'true';
+
+    const data = await getMasterData(refresh);
     return NextResponse.json(data);
   } catch (error) {
     console.error('Error reading Master Data:', error);

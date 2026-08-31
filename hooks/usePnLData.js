@@ -2,16 +2,17 @@
 import { useState, useEffect, useCallback } from 'react';
 
 const PNL_CACHE_KEY = 'pnl_transaction_v3';
-const PNL_CACHE_TTL = 0; // Tắt cache hoàn toàn để luôn lấy dữ liệu mới nhất
+const PNL_CACHE_TTL = 5 * 60 * 1000; // 5 phút
 
 export function usePnLData() {
   const [data, setData] = useState({ records: [], summary: { totalRevenue: 0, totalExpense: 0, netProfit: 0 }, lastUpdated: null });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  const fetchFromAPI = async () => {
+  const fetchFromAPI = async (forceRefresh = false) => {
     try {
-      const res = await fetch('/api/pnl');
+      const url = forceRefresh ? '/api/pnl?refresh=true' : '/api/pnl';
+      const res = await fetch(url);
       if (!res.ok) throw new Error('Failed to fetch PnL data');
       const apiData = await res.json();
       
@@ -30,12 +31,19 @@ export function usePnLData() {
     }
   };
 
+  const refresh = useCallback(async () => {
+    setLoading(true);
+    sessionStorage.removeItem(PNL_CACHE_KEY);
+    await fetchFromAPI(true);
+    setLoading(false);
+  }, []);
+
   const loadData = useCallback(async (forceRefresh = false) => {
     setLoading(true);
     setError(null);
 
     if (forceRefresh) {
-      await fetchFromAPI();
+      await fetchFromAPI(true);
       setLoading(false);
       return;
     }

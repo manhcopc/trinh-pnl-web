@@ -2,16 +2,17 @@
 import { useState, useEffect, useCallback } from 'react';
 
 const CACHE_KEY = 'pnl_master_v4';
-const CACHE_TTL = 0; // Tắt cache hoàn toàn để luôn lấy dữ liệu mới nhất
+const CACHE_TTL = 5 * 60 * 1000; // 5 phút
 
 export function useMasterData() {
-  const [data, setData] = useState({ branches: [], categoryGroups: [] });
+  const [data, setData] = useState({ branches: [], categoryGroups: [], lastUpdated: null });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  const fetchFromAPI = async () => {
+  const fetchFromAPI = async (forceRefresh = false) => {
     try {
-      const res = await fetch('/api/master');
+      const url = forceRefresh ? '/api/master?refresh=true' : '/api/master';
+      const res = await fetch(url);
       if (!res.ok) throw new Error('Failed to fetch master data');
       const apiData = await res.json();
       
@@ -32,7 +33,7 @@ export function useMasterData() {
     setError(null);
 
     if (forceRefresh) {
-      await fetchFromAPI();
+      await fetchFromAPI(true);
       setLoading(false);
       return;
     }

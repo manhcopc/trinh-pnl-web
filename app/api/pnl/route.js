@@ -9,6 +9,7 @@ export async function GET(request) {
     const month = searchParams.get('month');
     const branch = searchParams.get('branch');
     const action = searchParams.get('action');
+    const refresh = searchParams.get('refresh') === 'true';
 
     // Nếu request yêu cầu lấy chi tiết của 1 Tháng & Cơ sở (để fill form Edit)
     if (action === 'get_details' && month && branch) {
@@ -17,7 +18,7 @@ export async function GET(request) {
     }
 
     // Lấy toàn bộ dữ liệu (hoặc lọc theo month/branch nhưng trả về format list/summary)
-    const data = await getPnLData(month, branch);
+    const data = await getPnLData(month, branch, refresh);
     return NextResponse.json(data);
   } catch (error) {
     console.error('Error reading PnL data:', error);
