@@ -1,7 +1,7 @@
 'use client';
 import { useState, useEffect, useCallback } from 'react';
 
-const CACHE_KEY = 'pnl_master_v3';
+const CACHE_KEY = 'pnl_master_v4';
 const CACHE_TTL = 0; // Tắt cache hoàn toàn để luôn lấy dữ liệu mới nhất
 
 export function useMasterData() {
