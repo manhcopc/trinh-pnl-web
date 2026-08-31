@@ -291,9 +291,11 @@ h2 {
 /* Table Sticky Classes */
 .table-wrapper {
   width: 100%;
-  max-height: calc(100vh - 280px);
+  max-height: 60vh;
   overflow: auto;
   position: relative;
+  border: 1px solid var(--surface-border);
+  border-radius: 8px;
 }
 
 .table-wrapper::-webkit-scrollbar {

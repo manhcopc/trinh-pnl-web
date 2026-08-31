@@ -237,7 +237,7 @@ export default function PnLMatrixTable({ records, mode, targetMonth, targetBranc
         <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', minWidth: `${300 + columns.length * (mode === 'custom_compare' ? 220 : 180)}px` }}>
           <thead className="sticky-header">
             <tr>
-              <th rowSpan="2" className="sticky-col sticky-corner" style={{ padding: '1rem 1.5rem', color: 'var(--text-secondary)', fontWeight: 600, fontSize: '0.85rem' }}>CHỈ TIÊU</th>
+              <th rowSpan="2" className="sticky-col sticky-corner" style={{ padding: '0.75rem 1rem', color: 'var(--text-secondary)', fontWeight: 600, fontSize: '0.85rem', height: '48px', boxSizing: 'border-box' }}>CHỈ TIÊU</th>
               {columns.map(col => (
                 <th colSpan={getColSpan(col)} key={col} style={{ height: '48px', padding: '0.75rem 1rem', color: col === 'base' ? 'var(--primary-color)' : 'var(--text-secondary)', fontWeight: col === 'base' ? 700 : 600, fontSize: '0.85rem', textAlign: 'center', borderBottom: '1px solid var(--surface-border)', borderLeft: col !== 'base' ? '1px dashed rgba(255,255,255,0.1)' : 'none' }}>
                   {formatColumnHeader(col)}
