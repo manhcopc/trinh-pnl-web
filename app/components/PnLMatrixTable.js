@@ -258,7 +258,7 @@ export default function PnLMatrixTable({ records, mode, targetMonth, targetBranc
             <tr ref={headerRef}>
               <th rowSpan="2" className="sticky-col sticky-corner" style={{ padding: '1rem 1.5rem', color: 'var(--text-secondary)', fontWeight: 600, fontSize: '0.85rem' }}>CHỈ TIÊU</th>
               {columns.map(col => (
-                <th colSpan={getColSpan(col)} key={col} style={{ height: '48px', padding: '0.75rem 1rem', color: col === 'base' ? 'var(--primary-color)' : 'var(--text-secondary)', fontWeight: col === 'base' ? 700 : 600, fontSize: '0.85rem', textAlign: 'center', borderBottom: '1px solid var(--surface-border)', borderLeft: col !== 'base' ? '1px dashed rgba(255,255,255,0.1)' : 'none' }}>
+                <th colSpan={getColSpan(col)} key={col} onMouseEnter={() => setHoveredCol(col)} onMouseLeave={() => setHoveredCol(null)} style={{ ...getHoverStyle(col), height: '48px', padding: '0.75rem 1rem', color: col === 'base' ? 'var(--primary-color)' : 'var(--text-secondary)', fontWeight: col === 'base' ? 700 : 600, fontSize: '0.85rem', textAlign: 'center', borderBottom: '1px solid var(--surface-border)', borderLeft: col !== 'base' ? '1px dashed rgba(255,255,255,0.1)' : 'none' }}>
                   {formatColumnHeader(col)}
                 </th>
               ))}
@@ -271,10 +271,10 @@ export default function PnLMatrixTable({ records, mode, targetMonth, targetBranc
             <tr className="sub-header">
               {columns.map(col => (
                 <React.Fragment key={`${col}-sub`}>
-                  <th style={{ padding: '0.5rem 1rem', color: 'var(--text-secondary)', fontWeight: 500, fontSize: '0.75rem', textAlign: 'right', minWidth: '100px', borderLeft: col !== 'base' ? '1px dashed rgba(255,255,255,0.1)' : 'none' }}>SỐ TIỀN</th>
-                  <th style={{ padding: '0.5rem 0.5rem', color: 'var(--text-secondary)', fontWeight: 500, fontSize: '0.75rem', textAlign: 'right', minWidth: '60px' }}>% DT</th>
+                  <th onMouseEnter={() => setHoveredCol(col)} onMouseLeave={() => setHoveredCol(null)} style={{ ...getHoverStyle(col), padding: '0.5rem 1rem', color: 'var(--text-secondary)', fontWeight: 500, fontSize: '0.75rem', textAlign: 'right', minWidth: '100px', borderLeft: col !== 'base' ? '1px dashed rgba(255,255,255,0.1)' : 'none' }}>SỐ TIỀN</th>
+                  <th onMouseEnter={() => setHoveredCol(col)} onMouseLeave={() => setHoveredCol(null)} style={{ ...getHoverStyle(col), padding: '0.5rem 0.5rem', color: 'var(--text-secondary)', fontWeight: 500, fontSize: '0.75rem', textAlign: 'right', minWidth: '60px' }}>% DT</th>
                   {mode === 'custom_compare' && col !== 'base' && (
-                    <th style={{ padding: '0.5rem 0.5rem', color: 'var(--text-secondary)', fontWeight: 600, fontSize: '0.75rem', textAlign: 'right', minWidth: '70px', background: 'rgba(255,255,255,0.02)' }}>Δ (%)</th>
+                    <th onMouseEnter={() => setHoveredCol(col)} onMouseLeave={() => setHoveredCol(null)} style={{ ...getHoverStyle(col), padding: '0.5rem 0.5rem', color: 'var(--text-secondary)', fontWeight: 600, fontSize: '0.75rem', textAlign: 'right', minWidth: '70px', background: 'rgba(255,255,255,0.02)' }}>Δ (%)</th>
                   )}
                 </React.Fragment>
               ))}
@@ -316,14 +316,14 @@ export default function PnLMatrixTable({ records, mode, targetMonth, targetBranc
                     </td>
                     {columns.map(col => (
                       <React.Fragment key={col}>
-                        <td style={{ padding: '1rem', fontWeight: 700, textAlign: 'right', color: groupColor, borderLeft: col !== 'base' ? '1px dashed rgba(0,0,0,0.05)' : 'none' }}>
+                        <td onMouseEnter={() => setHoveredCol(col)} onMouseLeave={() => setHoveredCol(null)} style={{ ...getHoverStyle(col), padding: '1rem', fontWeight: 700, textAlign: 'right', color: groupColor, borderLeft: col !== 'base' ? '1px dashed rgba(0,0,0,0.05)' : 'none' }}>
                           {groupData.totals[col] !== 0 ? formatCurrency(groupData.totals[col]) : '-'}
                         </td>
-                        <td style={{ padding: '1rem 0.5rem', fontWeight: 600, fontSize: '0.8rem', textAlign: 'right', color: groupColor, opacity: 0.7 }}>
+                        <td onMouseEnter={() => setHoveredCol(col)} onMouseLeave={() => setHoveredCol(null)} style={{ ...getHoverStyle(col), padding: '1rem 0.5rem', fontWeight: 600, fontSize: '0.8rem', textAlign: 'right', color: groupColor, opacity: 0.7 }}>
                           {groupData.totals[col] !== 0 ? calcPercent(groupData.totals[col], col) : '-'}
                         </td>
                         {mode === 'custom_compare' && col !== 'base' && (
-                          <td style={{ padding: '1rem 0.5rem', textAlign: 'right', background: 'rgba(0,0,0,0.015)' }}>
+                          <td onMouseEnter={() => setHoveredCol(col)} onMouseLeave={() => setHoveredCol(null)} style={{ ...getHoverStyle(col), padding: '1rem 0.5rem', textAlign: 'right', background: 'rgba(0,0,0,0.015)' }}>
                             {renderDelta(groupData.totals[col], groupData.totals['base'], isExpenseGroup)}
                           </td>
                         )}
@@ -350,14 +350,14 @@ export default function PnLMatrixTable({ records, mode, targetMonth, targetBranc
                       </td>
                       {columns.map(col => (
                         <React.Fragment key={col}>
-                          <td style={{ padding: '0.75rem 1rem', textAlign: 'right', fontWeight: 500, fontSize: '0.9rem', color: groupData.items[item][col] === 0 ? 'var(--text-secondary)' : 'var(--text-primary)', opacity: groupData.items[item][col] === 0 ? 0.4 : 1, borderLeft: col !== 'base' ? '1px dashed rgba(0,0,0,0.05)' : 'none' }}>
+                          <td onMouseEnter={() => setHoveredCol(col)} onMouseLeave={() => setHoveredCol(null)} style={{ ...getHoverStyle(col), padding: '0.75rem 1rem', textAlign: 'right', fontWeight: 500, fontSize: '0.9rem', color: groupData.items[item][col] === 0 ? 'var(--text-secondary)' : 'var(--text-primary)', opacity: groupData.items[item][col] === 0 ? 0.4 : 1, borderLeft: col !== 'base' ? '1px dashed rgba(0,0,0,0.05)' : 'none' }}>
                             {groupData.items[item][col] !== 0 ? formatCurrency(groupData.items[item][col]) : '-'}
                           </td>
-                          <td style={{ padding: '0.75rem 0.5rem', textAlign: 'right', fontWeight: 500, fontSize: '0.75rem', color: 'var(--text-secondary)', opacity: groupData.items[item][col] === 0 ? 0.2 : 0.8 }}>
+                          <td onMouseEnter={() => setHoveredCol(col)} onMouseLeave={() => setHoveredCol(null)} style={{ ...getHoverStyle(col), padding: '0.75rem 0.5rem', textAlign: 'right', fontWeight: 500, fontSize: '0.75rem', color: 'var(--text-secondary)', opacity: groupData.items[item][col] === 0 ? 0.2 : 0.8 }}>
                             {groupData.items[item][col] !== 0 ? calcPercent(groupData.items[item][col], col) : '-'}
                           </td>
                           {mode === 'custom_compare' && col !== 'base' && (
-                            <td style={{ padding: '0.75rem 0.5rem', textAlign: 'right', fontSize: '0.8rem', background: 'rgba(0,0,0,0.015)' }}>
+                            <td onMouseEnter={() => setHoveredCol(col)} onMouseLeave={() => setHoveredCol(null)} style={{ ...getHoverStyle(col), padding: '0.75rem 0.5rem', textAlign: 'right', fontSize: '0.8rem', background: 'rgba(0,0,0,0.015)' }}>
                               {renderDelta(groupData.items[item][col], groupData.items[item]['base'], isExpenseGroup)}
                             </td>
                           )}
@@ -384,14 +384,14 @@ export default function PnLMatrixTable({ records, mode, targetMonth, targetBranc
               <td className="sticky-col" style={{ padding: '1.25rem 1.5rem', fontWeight: 800, fontSize: '1.05rem', background: '#f8fafc' }}>TỔNG DOANH THU</td>
               {columns.map(col => (
                 <React.Fragment key={col}>
-                  <td style={{ padding: '1.25rem 1rem', textAlign: 'right', fontWeight: 800, color: 'var(--revenue-color)', borderLeft: col !== 'base' ? '1px dashed rgba(0,0,0,0.05)' : 'none' }}>
+                  <td onMouseEnter={() => setHoveredCol(col)} onMouseLeave={() => setHoveredCol(null)} style={{ ...getHoverStyle(col), padding: '1.25rem 1rem', textAlign: 'right', fontWeight: 800, color: 'var(--revenue-color)', borderLeft: col !== 'base' ? '1px dashed rgba(0,0,0,0.05)' : 'none' }}>
                     {formatCurrency(reportData.columnTotals.revenue[col])}
                   </td>
-                  <td style={{ padding: '1.25rem 0.5rem', textAlign: 'right', fontWeight: 700, fontSize: '0.85rem', color: 'var(--revenue-color)' }}>
+                  <td onMouseEnter={() => setHoveredCol(col)} onMouseLeave={() => setHoveredCol(null)} style={{ ...getHoverStyle(col), padding: '1.25rem 0.5rem', textAlign: 'right', fontWeight: 700, fontSize: '0.85rem', color: 'var(--revenue-color)' }}>
                     {reportData.columnTotals.revenue[col] > 0 ? '100%' : '0%'}
                   </td>
                   {mode === 'custom_compare' && col !== 'base' && (
-                    <td style={{ padding: '1.25rem 0.5rem', textAlign: 'right', background: 'rgba(0,0,0,0.015)' }}>
+                    <td onMouseEnter={() => setHoveredCol(col)} onMouseLeave={() => setHoveredCol(null)} style={{ ...getHoverStyle(col), padding: '1.25rem 0.5rem', textAlign: 'right', background: 'rgba(0,0,0,0.015)' }}>
                       {renderDelta(reportData.columnTotals.revenue[col], reportData.columnTotals.revenue['base'], false)}
                     </td>
                   )}
@@ -414,14 +414,14 @@ export default function PnLMatrixTable({ records, mode, targetMonth, targetBranc
               <td className="sticky-col" style={{ padding: '1.25rem 1.5rem', fontWeight: 800, fontSize: '1.05rem', background: '#f8fafc' }}>TỔNG CHI PHÍ</td>
               {columns.map(col => (
                 <React.Fragment key={col}>
-                  <td style={{ padding: '1.25rem 1rem', textAlign: 'right', fontWeight: 800, color: 'var(--expense-color)', borderLeft: col !== 'base' ? '1px dashed rgba(0,0,0,0.05)' : 'none' }}>
+                  <td onMouseEnter={() => setHoveredCol(col)} onMouseLeave={() => setHoveredCol(null)} style={{ ...getHoverStyle(col), padding: '1.25rem 1rem', textAlign: 'right', fontWeight: 800, color: 'var(--expense-color)', borderLeft: col !== 'base' ? '1px dashed rgba(0,0,0,0.05)' : 'none' }}>
                     {formatCurrency(reportData.columnTotals.expense[col])}
                   </td>
-                  <td style={{ padding: '1.25rem 0.5rem', textAlign: 'right', fontWeight: 700, fontSize: '0.85rem', color: 'var(--expense-color)', opacity: 0.8 }}>
+                  <td onMouseEnter={() => setHoveredCol(col)} onMouseLeave={() => setHoveredCol(null)} style={{ ...getHoverStyle(col), padding: '1.25rem 0.5rem', textAlign: 'right', fontWeight: 700, fontSize: '0.85rem', color: 'var(--expense-color)', opacity: 0.8 }}>
                     {calcPercent(reportData.columnTotals.expense[col], col)}
                   </td>
                   {mode === 'custom_compare' && col !== 'base' && (
-                    <td style={{ padding: '1.25rem 0.5rem', textAlign: 'right', background: 'rgba(0,0,0,0.015)' }}>
+                    <td onMouseEnter={() => setHoveredCol(col)} onMouseLeave={() => setHoveredCol(null)} style={{ ...getHoverStyle(col), padding: '1.25rem 0.5rem', textAlign: 'right', background: 'rgba(0,0,0,0.015)' }}>
                       {renderDelta(reportData.columnTotals.expense[col], reportData.columnTotals.expense['base'], true)}
                     </td>
                   )}
@@ -446,14 +446,14 @@ export default function PnLMatrixTable({ records, mode, targetMonth, targetBranc
               </td>
               {columns.map(col => (
                 <React.Fragment key={col}>
-                  <td style={{ padding: '1.5rem 1rem', textAlign: 'right', fontWeight: 800, fontSize: '1.1rem', color: 'var(--profit-color)', borderLeft: col !== 'base' ? '1px dashed rgba(168, 85, 247, 0.3)' : 'none' }}>
+                  <td onMouseEnter={() => setHoveredCol(col)} onMouseLeave={() => setHoveredCol(null)} style={{ ...getHoverStyle(col), padding: '1.5rem 1rem', textAlign: 'right', fontWeight: 800, fontSize: '1.1rem', color: 'var(--profit-color)', borderLeft: col !== 'base' ? '1px dashed rgba(168, 85, 247, 0.3)' : 'none' }}>
                     {formatCurrency(reportData.columnTotals.ebit[col])}
                   </td>
-                  <td style={{ padding: '1.5rem 0.5rem', textAlign: 'right', fontWeight: 700, fontSize: '0.9rem', color: 'var(--profit-color)', opacity: 0.8 }}>
+                  <td onMouseEnter={() => setHoveredCol(col)} onMouseLeave={() => setHoveredCol(null)} style={{ ...getHoverStyle(col), padding: '1.5rem 0.5rem', textAlign: 'right', fontWeight: 700, fontSize: '0.9rem', color: 'var(--profit-color)', opacity: 0.8 }}>
                     {calcPercent(reportData.columnTotals.ebit[col], col)}
                   </td>
                   {mode === 'custom_compare' && col !== 'base' && (
-                    <td style={{ padding: '1.5rem 0.5rem', textAlign: 'right', background: 'rgba(168, 85, 247, 0.05)' }}>
+                    <td onMouseEnter={() => setHoveredCol(col)} onMouseLeave={() => setHoveredCol(null)} style={{ ...getHoverStyle(col), padding: '1.5rem 0.5rem', textAlign: 'right', background: 'rgba(168, 85, 247, 0.05)' }}>
                       {renderDelta(reportData.columnTotals.ebit[col], reportData.columnTotals.ebit['base'], false)}
                     </td>
                   )}
@@ -476,12 +476,12 @@ export default function PnLMatrixTable({ records, mode, targetMonth, targetBranc
               <td className="sticky-col" style={{ padding: '1.25rem 1.5rem', fontWeight: 700, fontSize: '1.05rem', background: '#f8fafc' }}>+ TỔNG TỒN KHO CUỐI KỲ</td>
               {columns.map(col => (
                 <React.Fragment key={col}>
-                  <td style={{ padding: '1.25rem 1rem', textAlign: 'right', fontWeight: 700, color: 'var(--text-primary)', borderLeft: col !== 'base' ? '1px dashed rgba(0,0,0,0.05)' : 'none' }}>
+                  <td onMouseEnter={() => setHoveredCol(col)} onMouseLeave={() => setHoveredCol(null)} style={{ ...getHoverStyle(col), padding: '1.25rem 1rem', textAlign: 'right', fontWeight: 700, color: 'var(--text-primary)', borderLeft: col !== 'base' ? '1px dashed rgba(0,0,0,0.05)' : 'none' }}>
                     {formatCurrency(reportData.columnTotals.inventory[col])}
                   </td>
-                  <td style={{ padding: '1.25rem 0.5rem', textAlign: 'right', fontWeight: 500, fontSize: '0.85rem', color: 'var(--text-secondary)' }}>-</td>
+                  <td onMouseEnter={() => setHoveredCol(col)} onMouseLeave={() => setHoveredCol(null)} style={{ ...getHoverStyle(col), padding: '1.25rem 0.5rem', textAlign: 'right', fontWeight: 500, fontSize: '0.85rem', color: 'var(--text-secondary)' }}>-</td>
                   {mode === 'custom_compare' && col !== 'base' && (
-                    <td style={{ padding: '1.25rem 0.5rem', textAlign: 'right', background: 'rgba(0,0,0,0.015)' }}>
+                    <td onMouseEnter={() => setHoveredCol(col)} onMouseLeave={() => setHoveredCol(null)} style={{ ...getHoverStyle(col), padding: '1.25rem 0.5rem', textAlign: 'right', background: 'rgba(0,0,0,0.015)' }}>
                       {renderDelta(reportData.columnTotals.inventory[col], reportData.columnTotals.inventory['base'], false)}
                     </td>
                   )}
@@ -504,12 +504,12 @@ export default function PnLMatrixTable({ records, mode, targetMonth, targetBranc
                 const baseVal = reportData.columnTotals.ebit['base'] + reportData.columnTotals.inventory['base'];
                 return (
                   <React.Fragment key={col}>
-                    <td style={{ padding: '1.5rem 1rem', textAlign: 'right', fontWeight: 800, fontSize: '1.1rem', color: '#1d4ed8', borderLeft: col !== 'base' ? '1px dashed rgba(59, 130, 246, 0.3)' : 'none' }}>
+                    <td onMouseEnter={() => setHoveredCol(col)} onMouseLeave={() => setHoveredCol(null)} style={{ ...getHoverStyle(col), padding: '1.5rem 1rem', textAlign: 'right', fontWeight: 800, fontSize: '1.1rem', color: '#1d4ed8', borderLeft: col !== 'base' ? '1px dashed rgba(59, 130, 246, 0.3)' : 'none' }}>
                       {formatCurrency(val)}
                     </td>
-                    <td style={{ padding: '1.5rem 0.5rem', textAlign: 'right', fontWeight: 700, fontSize: '0.9rem', color: '#1d4ed8', opacity: 0.8 }}>-</td>
+                    <td onMouseEnter={() => setHoveredCol(col)} onMouseLeave={() => setHoveredCol(null)} style={{ ...getHoverStyle(col), padding: '1.5rem 0.5rem', textAlign: 'right', fontWeight: 700, fontSize: '0.9rem', color: '#1d4ed8', opacity: 0.8 }}>-</td>
                     {mode === 'custom_compare' && col !== 'base' && (
-                      <td style={{ padding: '1.5rem 0.5rem', textAlign: 'right', background: 'rgba(59, 130, 246, 0.05)' }}>
+                      <td onMouseEnter={() => setHoveredCol(col)} onMouseLeave={() => setHoveredCol(null)} style={{ ...getHoverStyle(col), padding: '1.5rem 0.5rem', textAlign: 'right', background: 'rgba(59, 130, 246, 0.05)' }}>
                         {renderDelta(val, baseVal, false)}
                       </td>
                     )}
@@ -530,14 +530,14 @@ export default function PnLMatrixTable({ records, mode, targetMonth, targetBranc
               <td className="sticky-col" style={{ padding: '1.25rem 1.5rem', fontWeight: 700, fontSize: '1.05rem', background: '#f8fafc' }}>- CHI PHÍ BO CHIA CHO CỬA HÀNG</td>
               {columns.map(col => (
                 <React.Fragment key={col}>
-                  <td style={{ padding: '1.25rem 1rem', textAlign: 'right', fontWeight: 700, color: 'var(--expense-color)', borderLeft: col !== 'base' ? '1px dashed rgba(0,0,0,0.05)' : 'none' }}>
+                  <td onMouseEnter={() => setHoveredCol(col)} onMouseLeave={() => setHoveredCol(null)} style={{ ...getHoverStyle(col), padding: '1.25rem 1rem', textAlign: 'right', fontWeight: 700, color: 'var(--expense-color)', borderLeft: col !== 'base' ? '1px dashed rgba(0,0,0,0.05)' : 'none' }}>
                     {formatCurrency(reportData.columnTotals.boCost[col])}
                   </td>
-                  <td style={{ padding: '1.25rem 0.5rem', textAlign: 'right', fontWeight: 700, fontSize: '0.85rem', color: 'var(--expense-color)', opacity: 0.8 }}>
+                  <td onMouseEnter={() => setHoveredCol(col)} onMouseLeave={() => setHoveredCol(null)} style={{ ...getHoverStyle(col), padding: '1.25rem 0.5rem', textAlign: 'right', fontWeight: 700, fontSize: '0.85rem', color: 'var(--expense-color)', opacity: 0.8 }}>
                     {calcPercent(reportData.columnTotals.boCost[col], col)}
                   </td>
                   {mode === 'custom_compare' && col !== 'base' && (
-                    <td style={{ padding: '1.25rem 0.5rem', textAlign: 'right', background: 'rgba(0,0,0,0.015)' }}>
+                    <td onMouseEnter={() => setHoveredCol(col)} onMouseLeave={() => setHoveredCol(null)} style={{ ...getHoverStyle(col), padding: '1.25rem 0.5rem', textAlign: 'right', background: 'rgba(0,0,0,0.015)' }}>
                       {renderDelta(reportData.columnTotals.boCost[col], reportData.columnTotals.boCost['base'], true)}
                     </td>
                   )}
@@ -562,12 +562,12 @@ export default function PnLMatrixTable({ records, mode, targetMonth, targetBranc
                 const baseVal = reportData.columnTotals.ebit['base'] + reportData.columnTotals.inventory['base'] - reportData.columnTotals.boCost['base'];
                 return (
                   <React.Fragment key={col}>
-                    <td style={{ padding: '1.5rem 1rem', textAlign: 'right', fontWeight: 800, fontSize: '1.2rem', color: 'var(--revenue-color)', borderLeft: col !== 'base' ? '1px dashed rgba(16, 185, 129, 0.3)' : 'none' }}>
+                    <td onMouseEnter={() => setHoveredCol(col)} onMouseLeave={() => setHoveredCol(null)} style={{ ...getHoverStyle(col), padding: '1.5rem 1rem', textAlign: 'right', fontWeight: 800, fontSize: '1.2rem', color: 'var(--revenue-color)', borderLeft: col !== 'base' ? '1px dashed rgba(16, 185, 129, 0.3)' : 'none' }}>
                       {formatCurrency(val)}
                     </td>
-                    <td style={{ padding: '1.5rem 0.5rem', textAlign: 'right', fontWeight: 700, fontSize: '0.9rem', color: 'var(--revenue-color)', opacity: 0.8 }}>-</td>
+                    <td onMouseEnter={() => setHoveredCol(col)} onMouseLeave={() => setHoveredCol(null)} style={{ ...getHoverStyle(col), padding: '1.5rem 0.5rem', textAlign: 'right', fontWeight: 700, fontSize: '0.9rem', color: 'var(--revenue-color)', opacity: 0.8 }}>-</td>
                     {mode === 'custom_compare' && col !== 'base' && (
-                      <td style={{ padding: '1.5rem 0.5rem', textAlign: 'right', background: 'rgba(16, 185, 129, 0.05)' }}>
+                      <td onMouseEnter={() => setHoveredCol(col)} onMouseLeave={() => setHoveredCol(null)} style={{ ...getHoverStyle(col), padding: '1.5rem 0.5rem', textAlign: 'right', background: 'rgba(16, 185, 129, 0.05)' }}>
                         {renderDelta(val, baseVal, false)}
                       </td>
                     )}
