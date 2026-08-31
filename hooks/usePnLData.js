@@ -1,8 +1,8 @@
 'use client';
 import { useState, useEffect, useCallback } from 'react';
 
-const PNL_CACHE_KEY = 'pnl_transaction_data';
-const PNL_CACHE_TTL = 15 * 60 * 1000; // 15 minutes
+const PNL_CACHE_KEY = 'pnl_transaction_v3';
+const PNL_CACHE_TTL = 0; // Tắt cache hoàn toàn để luôn lấy dữ liệu mới nhất
 
 export function usePnLData() {
   const [data, setData] = useState({ records: [], summary: { totalRevenue: 0, totalExpense: 0, netProfit: 0 }, lastUpdated: null });

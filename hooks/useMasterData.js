@@ -1,8 +1,8 @@
 'use client';
 import { useState, useEffect, useCallback } from 'react';
 
-const CACHE_KEY = 'pnl_master_data';
-const CACHE_TTL = 24 * 60 * 60 * 1000; // 24 hours
+const CACHE_KEY = 'pnl_master_v3';
+const CACHE_TTL = 0; // Tắt cache hoàn toàn để luôn lấy dữ liệu mới nhất
 
 export function useMasterData() {
   const [data, setData] = useState({ branches: [], categoryGroups: [] });

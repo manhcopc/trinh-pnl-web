@@ -1,6 +1,8 @@
 import { NextResponse } from 'next/server';
 import { getMasterData, addBranch, addCategory } from '@/lib/googleSheetsHelper';
 
+export const dynamic = 'force-dynamic';
+
 export async function GET() {
   try {
     const data = await getMasterData();

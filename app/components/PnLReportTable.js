@@ -30,7 +30,6 @@ export default function PnLReportTable({ records, filters, categoryGroups }) {
     return `${y}-${m.toString().padStart(2, '0')}`;
   };
 
-  // Tính toán dữ liệu báo cáo
   const reportData = useMemo(() => {
     const prevMonth = filters.month ? getPreviousMonth(filters.month) : null;
     const data = {};
@@ -38,6 +37,12 @@ export default function PnLReportTable({ records, filters, categoryGroups }) {
     let totalExpense = 0;
     let prevTotalRevenue = 0;
     let prevTotalExpense = 0;
+    
+    // Các biến mới cho Tồn Kho và BO
+    let totalInventory = 0;
+    let prevTotalInventory = 0;
+    let boCost = 0;
+    let prevBoCost = 0;
     
     // Khởi tạo map cho tất cả categories
     categoryGroups.forEach(g => {
@@ -60,17 +65,26 @@ export default function PnLReportTable({ records, filters, categoryGroups }) {
       // Tìm category group
       const group = categoryGroups.find(g => g.items.includes(r.category));
       if (group) {
+        // Nhận diện các dòng đặc thù
+        const isInventory = r.category.toLowerCase().includes('tồn kho');
+        const isBoCost = r.category.toLowerCase().includes('chi phí bo');
+
         if (isCurrentMonth) {
           data[group.group].items[r.category] += Number(r.amount);
           data[group.group].total += Number(r.amount);
           
-          if (group.type === 'Thu') totalRevenue += Number(r.amount);
+          if (isInventory) totalInventory += Number(r.amount);
+          else if (isBoCost) boCost += Number(r.amount);
+          else if (group.type === 'Thu') totalRevenue += Number(r.amount);
           else if (group.type === 'Chi') totalExpense += Number(r.amount);
+          
         } else if (isPrevMonth) {
           data[group.group].prevItems[r.category] += Number(r.amount);
           data[group.group].prevTotal += Number(r.amount);
           
-          if (group.type === 'Thu') prevTotalRevenue += Number(r.amount);
+          if (isInventory) prevTotalInventory += Number(r.amount);
+          else if (isBoCost) prevBoCost += Number(r.amount);
+          else if (group.type === 'Thu') prevTotalRevenue += Number(r.amount);
           else if (group.type === 'Chi') prevTotalExpense += Number(r.amount);
         }
       }
@@ -81,9 +95,15 @@ export default function PnLReportTable({ records, filters, categoryGroups }) {
       totalRevenue,
       totalExpense,
       ebit: totalRevenue - totalExpense,
+      totalInventory,
+      boCost,
+      profitAfterBO: (totalRevenue - totalExpense) + totalInventory - boCost,
       prevTotalRevenue,
       prevTotalExpense,
-      prevEbit: prevTotalRevenue - prevTotalExpense
+      prevEbit: prevTotalRevenue - prevTotalExpense,
+      prevTotalInventory,
+      prevBoCost,
+      prevProfitAfterBO: (prevTotalRevenue - prevTotalExpense) + prevTotalInventory - prevBoCost,
     };
   }, [records, filters, categoryGroups]);
 
@@ -221,6 +241,35 @@ export default function PnLReportTable({ records, filters, categoryGroups }) {
               <td style={{ padding: '1.5rem', textAlign: 'right', fontWeight: 800, fontSize: '1.2rem', color: 'var(--profit-color)' }}>{formatCurrency(reportData.ebit)}</td>
               <td style={{ padding: '1.5rem', textAlign: 'right', fontWeight: 800, fontSize: '1.2rem', color: 'var(--profit-color)' }}>{calculatePercent(reportData.ebit)}</td>
               <td style={{ padding: '1.5rem', textAlign: 'right', fontWeight: 800, fontSize: '1.2rem', color: getDeltaColor(reportData.ebit, reportData.prevEbit, false) }}>{calculateDelta(reportData.ebit, reportData.prevEbit)}</td>
+            </tr>
+
+            {/* Tồn kho & Lợi nhuận cộng tồn kho */}
+            <tr style={{ background: 'rgba(255,255,255,0.02)', borderTop: '1px solid var(--surface-border)' }}>
+              <td className="sticky-col" style={{ padding: '1.25rem 1.5rem', fontWeight: 700, fontSize: '1.1rem', background: '#f8fafc' }}>+ TỔNG TỒN KHO CUỐI KỲ</td>
+              <td style={{ padding: '1.25rem 1.5rem', textAlign: 'right', fontWeight: 700, fontSize: '1.1rem' }}>{formatCurrency(reportData.totalInventory)}</td>
+              <td style={{ padding: '1.25rem 1.5rem', textAlign: 'right', fontWeight: 700, fontSize: '1.1rem' }}>-</td>
+              <td style={{ padding: '1.25rem 1.5rem', textAlign: 'right', fontWeight: 700, fontSize: '1.1rem', color: getDeltaColor(reportData.totalInventory, reportData.prevTotalInventory, false) }}>{calculateDelta(reportData.totalInventory, reportData.prevTotalInventory)}</td>
+            </tr>
+
+            <tr style={{ background: 'rgba(59, 130, 246, 0.15)' }}>
+              <td className="sticky-col" style={{ padding: '1.5rem', fontWeight: 800, fontSize: '1.2rem', color: '#1d4ed8', background: '#eff6ff' }}>LỢI NHUẬN NẾU CỘNG TỒN KHO</td>
+              <td style={{ padding: '1.5rem', textAlign: 'right', fontWeight: 800, fontSize: '1.2rem', color: '#1d4ed8' }}>{formatCurrency(reportData.ebit + reportData.totalInventory)}</td>
+              <td style={{ padding: '1.5rem', textAlign: 'right', fontWeight: 800, fontSize: '1.2rem', color: '#1d4ed8' }}>-</td>
+              <td style={{ padding: '1.5rem', textAlign: 'right', fontWeight: 800, fontSize: '1.2rem', color: getDeltaColor(reportData.ebit + reportData.totalInventory, reportData.prevEbit + reportData.prevTotalInventory, false) }}>{calculateDelta(reportData.ebit + reportData.totalInventory, reportData.prevEbit + reportData.prevTotalInventory)}</td>
+            </tr>
+
+            <tr style={{ background: 'rgba(255,255,255,0.02)', borderTop: '1px solid var(--surface-border)', borderBottom: '1px solid var(--surface-border)' }}>
+              <td className="sticky-col" style={{ padding: '1.25rem 1.5rem', fontWeight: 700, fontSize: '1.1rem', background: '#f8fafc' }}>- CHI PHÍ BO CHIA CHO CỬA HÀNG</td>
+              <td style={{ padding: '1.25rem 1.5rem', textAlign: 'right', fontWeight: 700, fontSize: '1.1rem', color: 'var(--expense-color)' }}>{formatCurrency(reportData.boCost)}</td>
+              <td style={{ padding: '1.25rem 1.5rem', textAlign: 'right', fontWeight: 700, fontSize: '1.1rem', color: 'var(--expense-color)' }}>{calculatePercent(reportData.boCost)}</td>
+              <td style={{ padding: '1.25rem 1.5rem', textAlign: 'right', fontWeight: 700, fontSize: '1.1rem', color: getDeltaColor(reportData.boCost, reportData.prevBoCost, true) }}>{calculateDelta(reportData.boCost, reportData.prevBoCost)}</td>
+            </tr>
+
+            <tr style={{ background: 'rgba(16, 185, 129, 0.15)' }}>
+              <td className="sticky-col" style={{ padding: '1.5rem', fontWeight: 800, fontSize: '1.3rem', color: 'var(--revenue-color)', background: '#ecfdf5' }}>LỢI NHUẬN SAU BO</td>
+              <td style={{ padding: '1.5rem', textAlign: 'right', fontWeight: 800, fontSize: '1.3rem', color: 'var(--revenue-color)' }}>{formatCurrency(reportData.profitAfterBO)}</td>
+              <td style={{ padding: '1.5rem', textAlign: 'right', fontWeight: 800, fontSize: '1.3rem', color: 'var(--revenue-color)' }}>-</td>
+              <td style={{ padding: '1.5rem', textAlign: 'right', fontWeight: 800, fontSize: '1.3rem', color: getDeltaColor(reportData.profitAfterBO, reportData.prevProfitAfterBO, false) }}>{calculateDelta(reportData.profitAfterBO, reportData.prevProfitAfterBO)}</td>
             </tr>
 
           </tbody>
