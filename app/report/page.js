@@ -1,5 +1,5 @@
 'use client';
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useRef } from 'react';
 import { useMasterData } from '@/hooks/useMasterData';
 import PnLReportTable from '../components/PnLReportTable';
 import PnLMatrixTable from '../components/PnLMatrixTable';
@@ -33,16 +33,19 @@ export default function ReportPage() {
     return Array.from(months).sort().reverse();
   }, [records]);
 
+  const isInitialized = useRef(false);
+
   // Khởi tạo selectedMonths và selectedBranches khi dữ liệu đã sẵn sàng
   useEffect(() => {
-    if (availableMonths.length > 0 && filters.selectedMonths.length === 0) {
-      setFilters(prev => ({ ...prev, selectedMonths: availableMonths }));
+    if (!isInitialized.current && availableMonths.length > 0 && branches.length > 0) {
+      setFilters(prev => ({ 
+        ...prev, 
+        selectedMonths: availableMonths,
+        selectedBranches: [...branches]
+      }));
+      isInitialized.current = true;
     }
-    if (branches.length > 0 && filters.selectedBranches.length === 0) {
-      // Mặc định chọn tất cả
-      setFilters(prev => ({ ...prev, selectedBranches: [...branches] }));
-    }
-  }, [availableMonths, branches, filters.selectedMonths.length, filters.selectedBranches.length]);
+  }, [availableMonths, branches]);
 
   const handleMonthToggle = (month) => {
     setFilters(prev => {
@@ -257,7 +260,14 @@ export default function ReportPage() {
           <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap' }}>
             {/* Cột tick chọn Cơ sở cho Phân Tích Xu Hướng */}
             <div className="form-group" style={{ marginBottom: 0, minWidth: '250px', flex: 2 }}>
-              <label style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', marginBottom: '0.25rem', display: 'block' }}>Chọn các cơ sở so sánh</label>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.25rem' }}>
+                <label style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', margin: 0 }}>Chọn các cơ sở so sánh</label>
+                <div style={{ fontSize: '0.75rem', display: 'flex', gap: '0.5rem' }}>
+                  <button onClick={() => setFilters(prev => ({ ...prev, selectedBranches: [...branches] }))} style={{ color: 'var(--primary-color)', background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}>Tất cả</button>
+                  <span style={{ color: 'var(--surface-border)' }}>|</span>
+                  <button onClick={() => setFilters(prev => ({ ...prev, selectedBranches: [] }))} style={{ color: 'var(--text-secondary)', background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}>Bỏ chọn</button>
+                </div>
+              </div>
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.75rem', background: 'rgba(255,255,255,0.02)', padding: '0.75rem', borderRadius: '8px', border: '1px solid var(--surface-border)' }}>
                 {branches.length === 0 ? (
                   <span style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>Không có cơ sở</span>
@@ -279,7 +289,14 @@ export default function ReportPage() {
 
             {/* Cột tick chọn nhiều Tháng cho Phân Tích Xu Hướng */}
             <div className="form-group" style={{ marginBottom: 0, minWidth: '250px', flex: 2 }}>
-              <label style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', marginBottom: '0.25rem', display: 'block' }}>Chọn các tháng hiển thị</label>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.25rem' }}>
+                <label style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', margin: 0 }}>Chọn các tháng hiển thị</label>
+                <div style={{ fontSize: '0.75rem', display: 'flex', gap: '0.5rem' }}>
+                  <button onClick={() => setFilters(prev => ({ ...prev, selectedMonths: availableMonths }))} style={{ color: 'var(--primary-color)', background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}>Tất cả</button>
+                  <span style={{ color: 'var(--surface-border)' }}>|</span>
+                  <button onClick={() => setFilters(prev => ({ ...prev, selectedMonths: [] }))} style={{ color: 'var(--text-secondary)', background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}>Bỏ chọn</button>
+                </div>
+              </div>
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.75rem', background: 'rgba(255,255,255,0.02)', padding: '0.75rem', borderRadius: '8px', border: '1px solid var(--surface-border)' }}>
                 {availableMonths.length === 0 ? (
                   <span style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>Không có dữ liệu</span>
