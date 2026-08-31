@@ -1,6 +1,6 @@
 'use client';
 import { useState, useEffect, useMemo, useRef } from 'react';
-import { FaFilter, FaPlus, FaTrash, FaTable, FaChartLine, FaColumns, FaExchangeAlt, FaCheckDouble, FaRegSquare } from 'react-icons/fa';
+
 import { useMasterData } from '@/hooks/useMasterData';
 import PnLReportTable from '../components/PnLReportTable';
 import PnLMatrixTable from '../components/PnLMatrixTable';
@@ -269,14 +269,14 @@ export default function ReportPage() {
                     className="btn"
                     style={{ padding: '0.3rem 0.6rem', fontSize: '0.75rem', background: 'rgba(245, 158, 11, 0.1)', color: '#f59e0b', border: '1px solid rgba(245, 158, 11, 0.3)', minWidth: '60px' }}
                   >
-                    <FaCheckDouble style={{ display: 'inline', marginRight: '4px' }} /> Tất cả
+                    <span style={{ marginRight: '4px' }}>✓</span> Tất cả
                   </button>
                   <button 
                     onClick={() => setFilters(prev => ({ ...prev, selectedBranches: [] }))} 
                     className="btn"
                     style={{ padding: '0.3rem 0.6rem', fontSize: '0.75rem', background: 'rgba(255, 255, 255, 0.05)', color: 'var(--text-secondary)', border: '1px solid var(--surface-border)', minWidth: '60px' }}
                   >
-                    <FaRegSquare style={{ display: 'inline', marginRight: '4px' }} /> Bỏ chọn
+                    <span style={{ marginRight: '4px', fontSize: '1.2em', verticalAlign: 'middle', lineHeight: 0 }}>☐</span> Bỏ chọn
                   </button>
                 </div>
               </div>
@@ -309,14 +309,14 @@ export default function ReportPage() {
                     className="btn"
                     style={{ padding: '0.3rem 0.6rem', fontSize: '0.75rem', background: 'rgba(59, 130, 246, 0.1)', color: '#3b82f6', border: '1px solid rgba(59, 130, 246, 0.3)', minWidth: '60px' }}
                   >
-                    <FaCheckDouble style={{ display: 'inline', marginRight: '4px' }} /> Tất cả
+                    <span style={{ marginRight: '4px' }}>✓</span> Tất cả
                   </button>
                   <button 
                     onClick={() => setFilters(prev => ({ ...prev, selectedMonths: [] }))} 
                     className="btn"
                     style={{ padding: '0.3rem 0.6rem', fontSize: '0.75rem', background: 'rgba(255, 255, 255, 0.05)', color: 'var(--text-secondary)', border: '1px solid var(--surface-border)', minWidth: '60px' }}
                   >
-                    <FaRegSquare style={{ display: 'inline', marginRight: '4px' }} /> Bỏ chọn
+                    <span style={{ marginRight: '4px', fontSize: '1.2em', verticalAlign: 'middle', lineHeight: 0 }}>☐</span> Bỏ chọn
                   </button>
                 </div>
               </div>
