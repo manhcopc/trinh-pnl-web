@@ -235,6 +235,11 @@ export default function PnLMatrixTable({ records, mode, targetMonth, targetBranc
 
   if (!records || records.length === 0) return null;
 
+  const getHoverStyle = (col) => ({
+    boxShadow: hoveredCol === col ? 'inset 0 0 0 9999px rgba(0,0,0,0.03)' : 'none',
+    transition: 'box-shadow 0.2s ease',
+  });
+
   return (
     <div className="glass-panel animate-fade-in" style={{ padding: 0, overflow: 'hidden' }}>
       {/* Header Info */}
