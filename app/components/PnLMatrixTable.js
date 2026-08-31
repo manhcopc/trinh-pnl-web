@@ -11,6 +11,7 @@ export default function PnLMatrixTable({ records, mode, targetMonth, targetBranc
     }
   });
   const [openGroups, setOpenGroups] = useState(defaultOpen);
+  const [hoveredCol, setHoveredCol] = useState(null);
 
   const toggleGroup = (group) => {
     setOpenGroups(prev => ({ ...prev, [group]: !prev[group] }));
