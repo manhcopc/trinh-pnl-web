@@ -274,7 +274,7 @@ export default function PnLMatrixTable({ records, mode, targetMonth, targetBranc
 
       {/* Ma trận */}
       <div className="table-wrapper" ref={tableWrapperRef}>
-        <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', minWidth: `${300 + columns.length * (mode === 'custom_compare' ? 220 : 180)}px` }}>
+        <table className={`${pinnedCol ? "has-pinned-col" : ""} ${mode === 'custom_compare' ? "is-custom-compare" : ""}`.trim()} style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', minWidth: `${300 + columns.length * (mode === 'custom_compare' ? 220 : 180)}px` }}>
           <thead className="sticky-header">
             <tr ref={headerRef}>
               <th rowSpan="2" className="sticky-col sticky-corner" style={{ padding: '1rem 1.5rem', color: 'var(--text-secondary)', fontWeight: 600, fontSize: '0.85rem' }}>CHỈ TIÊU</th>
@@ -299,17 +299,17 @@ export default function PnLMatrixTable({ records, mode, targetMonth, targetBranc
             <tr className="sub-header">
               {columns.map(col => (
                 <React.Fragment key={`${col}-sub`}>
-                  <th onMouseEnter={() => setHoveredCol(col)} onMouseLeave={() => setHoveredCol(null)} style={{ ...getHoverStyle(col), padding: '0.5rem 1rem', color: 'var(--text-secondary)', fontWeight: 500, fontSize: '0.75rem', textAlign: 'right', minWidth: '100px', borderLeft: col !== 'base' ? '1px dashed rgba(255,255,255,0.1)' : 'none' }}>SỐ TIỀN</th>
-                  <th onMouseEnter={() => setHoveredCol(col)} onMouseLeave={() => setHoveredCol(null)} style={{ ...getHoverStyle(col), padding: '0.5rem 0.5rem', color: 'var(--text-secondary)', fontWeight: 500, fontSize: '0.75rem', textAlign: 'right', minWidth: '60px' }}>% DT</th>
+                  <th onMouseEnter={() => setHoveredCol(col)} onMouseLeave={() => setHoveredCol(null)} style={{ ...getHoverStyle(col), padding: '0.5rem 1rem', color: 'var(--text-secondary)', fontWeight: 500, fontSize: '0.75rem', textAlign: 'right', width: '110px', minWidth: '110px', maxWidth: '110px', borderLeft: col !== 'base' ? '1px dashed rgba(255,255,255,0.1)' : 'none' }}>SỐ TIỀN</th>
+                  <th onMouseEnter={() => setHoveredCol(col)} onMouseLeave={() => setHoveredCol(null)} style={{ ...getHoverStyle(col), padding: '0.5rem 0.5rem', color: 'var(--text-secondary)', fontWeight: 500, fontSize: '0.75rem', textAlign: 'right', width: '70px', minWidth: '70px', maxWidth: '70px' }}>% DT</th>
                   {mode === 'custom_compare' && col !== 'base' && (
-                    <th onMouseEnter={() => setHoveredCol(col)} onMouseLeave={() => setHoveredCol(null)} style={{ ...getHoverStyle(col), padding: '0.5rem 0.5rem', color: 'var(--text-secondary)', fontWeight: 600, fontSize: '0.75rem', textAlign: 'right', minWidth: '70px', background: 'rgba(255,255,255,0.02)' }}>Δ (%)</th>
+                    <th onMouseEnter={() => setHoveredCol(col)} onMouseLeave={() => setHoveredCol(null)} style={{ ...getHoverStyle(col), padding: '0.5rem 0.5rem', color: 'var(--text-secondary)', fontWeight: 600, fontSize: '0.75rem', textAlign: 'right', width: '80px', minWidth: '80px', maxWidth: '80px', background: 'rgba(255,255,255,0.02)' }}>Δ (%)</th>
                   )}
                 </React.Fragment>
               ))}
               {mode !== 'custom_compare' && (
                 <>
                   <th style={{ padding: '0.5rem 1rem', color: 'var(--text-secondary)', fontWeight: 500, fontSize: '0.75rem', textAlign: 'right', minWidth: '110px', borderLeft: '1px dashed rgba(255,255,255,0.1)' }}>SỐ TIỀN</th>
-                  <th style={{ padding: '0.5rem 1.5rem', color: 'var(--text-secondary)', fontWeight: 500, fontSize: '0.75rem', textAlign: 'right', minWidth: '70px' }}>% DT</th>
+                  <th style={{ padding: '0.5rem 1.5rem', color: 'var(--text-secondary)', fontWeight: 500, fontSize: '0.75rem', textAlign: 'right', width: '80px', minWidth: '80px', maxWidth: '80px' }}>% DT</th>
                 </>
               )}
             </tr>
@@ -372,7 +372,7 @@ export default function PnLMatrixTable({ records, mode, targetMonth, targetBranc
                   
                   {/* Items */}
                   {isOpen && g.items.map(item => (
-                    <tr key={item} style={{ borderBottom: '1px solid rgba(0,0,0,0.03)', transition: 'background 0.2s' }} className="hover-row">
+                    <tr key={item} style={{ '--row-bg': '#ffffff', borderBottom: '1px solid rgba(0,0,0,0.03)', transition: 'background 0.2s' }} className="hover-row">
                       <td className="sticky-col" style={{ padding: '0.75rem 1.5rem 0.75rem 3rem', color: 'var(--text-secondary)', fontSize: '0.9rem', background: '#ffffff' }}>
                         {item}
                       </td>
@@ -408,7 +408,7 @@ export default function PnLMatrixTable({ records, mode, targetMonth, targetBranc
             })}
 
             {/* TỔNG DOANH THU */}
-            <tr style={{ background: 'rgba(255,255,255,0.02)', borderTop: '2px solid var(--surface-border)' }}>
+            <tr style={{ '--row-bg': '#f8fafc', background: 'rgba(255,255,255,0.02)', borderTop: '2px solid var(--surface-border)' }}>
               <td className="sticky-col" style={{ padding: '1.25rem 1.5rem', fontWeight: 800, fontSize: '1.05rem', background: '#f8fafc' }}>TỔNG DOANH THU</td>
               {columns.map(col => (
                 <React.Fragment key={col}>
@@ -438,7 +438,7 @@ export default function PnLMatrixTable({ records, mode, targetMonth, targetBranc
             </tr>
 
             {/* TỔNG CHI PHÍ */}
-            <tr style={{ background: 'rgba(255,255,255,0.02)', borderBottom: '1px solid var(--surface-border)' }}>
+            <tr style={{ '--row-bg': '#f8fafc', background: 'rgba(255,255,255,0.02)', borderBottom: '1px solid var(--surface-border)' }}>
               <td className="sticky-col" style={{ padding: '1.25rem 1.5rem', fontWeight: 800, fontSize: '1.05rem', background: '#f8fafc' }}>TỔNG CHI PHÍ</td>
               {columns.map(col => (
                 <React.Fragment key={col}>
@@ -468,7 +468,7 @@ export default function PnLMatrixTable({ records, mode, targetMonth, targetBranc
             </tr>
 
             {/* EBIT */}
-            <tr style={{ background: 'rgba(168, 85, 247, 0.15)' }}>
+            <tr style={{ '--row-bg': '#f3e8ff', background: 'rgba(168, 85, 247, 0.15)' }}>
               <td className="sticky-col" style={{ padding: '1.5rem', fontWeight: 800, fontSize: '1.1rem', color: 'var(--profit-color)', background: '#f3e8ff' }}>
                 LỢI NHUẬN (EBIT)
               </td>
@@ -500,7 +500,7 @@ export default function PnLMatrixTable({ records, mode, targetMonth, targetBranc
             </tr>
 
             {/* Tồn kho & Lợi nhuận cộng tồn kho */}
-            <tr style={{ background: 'rgba(255,255,255,0.02)', borderTop: '1px solid var(--surface-border)' }}>
+            <tr style={{ '--row-bg': '#f8fafc', background: 'rgba(255,255,255,0.02)', borderTop: '1px solid var(--surface-border)' }}>
               <td className="sticky-col" style={{ padding: '1.25rem 1.5rem', fontWeight: 700, fontSize: '1.05rem', background: '#f8fafc' }}>+ TỔNG TỒN KHO CUỐI KỲ</td>
               {columns.map(col => (
                 <React.Fragment key={col}>
@@ -525,7 +525,7 @@ export default function PnLMatrixTable({ records, mode, targetMonth, targetBranc
               )}
             </tr>
 
-            <tr style={{ background: 'rgba(59, 130, 246, 0.15)' }}>
+            <tr style={{ '--row-bg': '#eff6ff', background: 'rgba(59, 130, 246, 0.15)' }}>
               <td className="sticky-col" style={{ padding: '1.5rem', fontWeight: 800, fontSize: '1.1rem', color: '#1d4ed8', background: '#eff6ff' }}>LỢI NHUẬN NẾU CỘNG TỒN KHO</td>
               {columns.map(col => {
                 const val = reportData.columnTotals.ebit[col] + reportData.columnTotals.inventory[col];
@@ -554,7 +554,7 @@ export default function PnLMatrixTable({ records, mode, targetMonth, targetBranc
               )}
             </tr>
 
-            <tr style={{ background: 'rgba(255,255,255,0.02)', borderTop: '1px solid var(--surface-border)', borderBottom: '1px solid var(--surface-border)' }}>
+            <tr style={{ '--row-bg': '#f8fafc', background: 'rgba(255,255,255,0.02)', borderTop: '1px solid var(--surface-border)', borderBottom: '1px solid var(--surface-border)' }}>
               <td className="sticky-col" style={{ padding: '1.25rem 1.5rem', fontWeight: 700, fontSize: '1.05rem', background: '#f8fafc' }}>- CHI PHÍ BO CHIA CHO CỬA HÀNG</td>
               {columns.map(col => (
                 <React.Fragment key={col}>
@@ -583,7 +583,7 @@ export default function PnLMatrixTable({ records, mode, targetMonth, targetBranc
               )}
             </tr>
 
-            <tr style={{ background: 'rgba(16, 185, 129, 0.15)' }}>
+            <tr style={{ '--row-bg': '#ecfdf5', background: 'rgba(16, 185, 129, 0.15)' }}>
               <td className="sticky-col" style={{ padding: '1.5rem', fontWeight: 800, fontSize: '1.2rem', color: 'var(--revenue-color)', background: '#ecfdf5' }}>LỢI NHUẬN SAU BO</td>
               {columns.map(col => {
                 const val = reportData.columnTotals.ebit[col] - reportData.columnTotals.boCost[col];
@@ -612,7 +612,7 @@ export default function PnLMatrixTable({ records, mode, targetMonth, targetBranc
               )}
             </tr>
 
-            <tr style={{ background: 'rgba(16, 185, 129, 0.25)' }}>
+            <tr style={{ '--row-bg': '#d1fae5', background: 'rgba(16, 185, 129, 0.25)' }}>
               <td className="sticky-col" style={{ padding: '1.5rem', fontWeight: 800, fontSize: '1.2rem', color: 'var(--primary-color)', background: '#d1fae5' }}>LỢI NHUẬN SAU BO (CÓ TỒN KHO)</td>
               {columns.map(col => {
                 const val = reportData.columnTotals.ebit[col] + reportData.columnTotals.inventory[col] - reportData.columnTotals.boCost[col];
