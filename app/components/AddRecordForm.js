@@ -12,6 +12,11 @@ export default function AddRecordForm({ onRecordAdded }) {
 
   const [errorMsg, setErrorMsg] = useState('');
   const [successMsg, setSuccessMsg] = useState('');
+  
+  const showError = (msg) => {
+    setErrorMsg(msg);
+    if (msg) setTimeout(() => setErrorMsg(''), 5000);
+  };
   const [openSections, setOpenSections] = useState({});
 
   // Mở group đầu tiên khi categoryGroups đã tải xong
@@ -44,16 +49,30 @@ export default function AddRecordForm({ onRecordAdded }) {
   };
 
   const handleAmountChange = (category, rawValue) => {
-    // Remove all non-numeric characters
+    // Nếu nhập ký tự không hợp lệ (ngoài số, dấu phẩy, dấu âm) hoặc dấu âm ở giữa
+    if (/[^\d,-]/.test(rawValue) || (rawValue.indexOf('-') > 0)) {
+      showError('Vui lòng chỉ nhập số hợp lệ.');
+    } else {
+      setErrorMsg('');
+    }
+
+    const isNegative = rawValue.startsWith('-');
     const numericValue = rawValue.replace(/\D/g, '');
     
     if (numericValue === '') {
-      setAmounts(prev => ({ ...prev, [category]: '' }));
+      if (rawValue === '-') {
+        setAmounts(prev => ({ ...prev, [category]: '-' }));
+      } else {
+        setAmounts(prev => ({ ...prev, [category]: '' }));
+      }
       return;
     }
     
-    // Format with commas (e.g., 1,000,000)
-    const formattedValue = Number(numericValue).toLocaleString('en-US');
+    let formattedValue = Number(numericValue).toLocaleString('en-US');
+    if (isNegative) {
+      formattedValue = '-' + formattedValue;
+    }
+    
     setAmounts(prev => ({ ...prev, [category]: formattedValue }));
   };
 
@@ -102,8 +121,10 @@ export default function AddRecordForm({ onRecordAdded }) {
       group.items.forEach(cat => {
         const rawStr = amounts[cat] || '0';
         const val = Number(rawStr.replace(/,/g, ''));
-        if (group.type === 'Thu') rev += val;
-        else if (group.type === 'Chi') exp += val;
+        if (!isNaN(val)) {
+          if (group.type === 'Thu') rev += val;
+          else if (group.type === 'Chi') exp += val;
+        }
       });
     });
     
@@ -117,8 +138,8 @@ export default function AddRecordForm({ onRecordAdded }) {
   const handleSubmit = async (e) => {
     e.preventDefault();
     
-    if (!meta.month) return setErrorMsg('Vui lòng chọn Tháng/Năm.');
-    if (!meta.branch) return setErrorMsg('Vui lòng chọn Cơ sở.');
+    if (!meta.month) return showError('Vui lòng chọn Tháng/Năm.');
+    if (!meta.branch) return showError('Vui lòng chọn Cơ sở.');
     
     const records = [];
     categoryGroups.forEach(group => {
@@ -137,7 +158,7 @@ export default function AddRecordForm({ onRecordAdded }) {
     });
 
     if (records.length === 0) {
-      return setErrorMsg('Vui lòng nhập ít nhất một khoản tiền khác 0.');
+      return showError('Vui lòng nhập ít nhất một khoản tiền khác 0.');
     }
 
     setLoading(true);
@@ -161,10 +182,10 @@ export default function AddRecordForm({ onRecordAdded }) {
         if (onRecordAdded) onRecordAdded();
       } else {
         const errorData = await response.json();
-        setErrorMsg(errorData.error || 'Failed to submit data');
+        showError(errorData.error || 'Failed to submit data');
       }
     } catch (error) {
-      setErrorMsg('Có lỗi xảy ra khi kết nối máy chủ.');
+      showError('Có lỗi xảy ra khi kết nối máy chủ.');
     } finally {
       setLoading(false);
     }
@@ -188,14 +209,7 @@ export default function AddRecordForm({ onRecordAdded }) {
         </p>
       </div>
       
-      {errorMsg && (
-        <div style={{ padding: '0 1.5rem', marginTop: '1rem' }}>
-          <div className="error-message">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
-            {errorMsg}
-          </div>
-        </div>
-      )}
+
 
       <form onSubmit={handleSubmit} style={{ padding: '1rem 1.5rem 1.5rem', display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
         
@@ -315,12 +329,20 @@ export default function AddRecordForm({ onRecordAdded }) {
         </div>
       </form>
 
-      {successMsg && (
+      {(successMsg || errorMsg) && (
         <div className="toast-container">
-          <div className="toast">
-            <svg style={{ color: 'var(--revenue-color)' }} width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
-            <span style={{ fontWeight: 500 }}>{successMsg}</span>
-          </div>
+          {errorMsg && (
+            <div className="toast error-toast">
+              <svg style={{ color: 'white' }} width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+              <span style={{ fontWeight: 500 }}>{errorMsg}</span>
+            </div>
+          )}
+          {successMsg && (
+            <div className="toast">
+              <svg style={{ color: 'var(--revenue-color)' }} width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
+              <span style={{ fontWeight: 500 }}>{successMsg}</span>
+            </div>
+          )}
         </div>
       )}
     </div>
