@@ -17,8 +17,10 @@ export default function PnLMatrixTable({ records, mode, targetMonth, targetBranc
     setOpenGroups(prev => ({ ...prev, [group]: !prev[group] }));
   };
 
+  const [pinnedCol, setPinnedCol] = useState(null);
+
   // Xác định các Cột (Columns) dựa trên chế độ
-  const columns = useMemo(() => {
+  const rawColumns = useMemo(() => {
     if (mode === 'branch_compare') {
       return masterBranches;
     } else if (mode === 'trend_analysis') {
@@ -43,6 +45,11 @@ export default function PnLMatrixTable({ records, mode, targetMonth, targetBranc
     }
     return [];
   }, [mode, masterBranches, targetMonths, targetBranches, compareTargets]);
+
+  const columns = useMemo(() => {
+    if (!pinnedCol || !rawColumns.includes(pinnedCol)) return rawColumns;
+    return [pinnedCol, ...rawColumns.filter(c => c !== pinnedCol)];
+  }, [rawColumns, pinnedCol]);
 
     // Pivot Dữ liệu
   const reportData = useMemo(() => {
@@ -236,10 +243,18 @@ export default function PnLMatrixTable({ records, mode, targetMonth, targetBranc
 
   if (!records || records.length === 0) return null;
 
-  const getHoverStyle = (col) => ({
-    boxShadow: hoveredCol === col ? 'inset 0 0 0 9999px rgba(0,0,0,0.03)' : 'none',
-    transition: 'box-shadow 0.2s ease',
-  });
+  const getHoverStyle = (col) => {
+    const isPinned = pinnedCol === col;
+    const isHovered = hoveredCol === col;
+    let bgColor = 'transparent';
+    if (isPinned) bgColor = 'rgba(59, 130, 246, 0.05)';
+    
+    return {
+      backgroundColor: bgColor,
+      boxShadow: isHovered ? 'inset 0 0 0 9999px rgba(0,0,0,0.03)' : 'none',
+      transition: 'box-shadow 0.2s ease, background-color 0.2s ease',
+    };
+  };
 
   return (
     <div className="glass-panel animate-fade-in" style={{ padding: 0, overflow: 'hidden' }}>
@@ -264,8 +279,15 @@ export default function PnLMatrixTable({ records, mode, targetMonth, targetBranc
             <tr ref={headerRef}>
               <th rowSpan="2" className="sticky-col sticky-corner" style={{ padding: '1rem 1.5rem', color: 'var(--text-secondary)', fontWeight: 600, fontSize: '0.85rem' }}>CHỈ TIÊU</th>
               {columns.map(col => (
-                <th colSpan={getColSpan(col)} key={col} onMouseEnter={() => setHoveredCol(col)} onMouseLeave={() => setHoveredCol(null)} style={{ ...getHoverStyle(col), height: '48px', padding: '0.75rem 1rem', color: col === 'base' ? 'var(--primary-color)' : 'var(--text-secondary)', fontWeight: col === 'base' ? 700 : 600, fontSize: '0.85rem', textAlign: 'center', borderBottom: '1px solid var(--surface-border)', borderLeft: col !== 'base' ? '1px dashed rgba(255,255,255,0.1)' : 'none' }}>
+                <th colSpan={getColSpan(col)} key={col} onMouseEnter={() => setHoveredCol(col)} onMouseLeave={() => setHoveredCol(null)} style={{ ...getHoverStyle(col), position: 'relative', height: '48px', padding: '0.75rem 2rem 0.75rem 1rem', color: col === 'base' || pinnedCol === col ? 'var(--primary-color)' : 'var(--text-secondary)', fontWeight: col === 'base' || pinnedCol === col ? 700 : 600, fontSize: '0.85rem', textAlign: 'center', borderBottom: '1px solid var(--surface-border)', borderLeft: col !== 'base' ? '1px dashed rgba(255,255,255,0.1)' : 'none' }}>
                   {formatColumnHeader(col)}
+                  <button 
+                    onClick={() => setPinnedCol(pinnedCol === col ? null : col)}
+                    title={pinnedCol === col ? "Bỏ ghim cột này" : "Ghim cột này lên đầu"}
+                    style={{ position: 'absolute', right: '0.5rem', top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', fontSize: '1rem', opacity: pinnedCol === col ? 1 : 0.3, transition: 'opacity 0.2s', padding: '4px' }}
+                  >
+                    📌
+                  </button>
                 </th>
               ))}
               {mode !== 'custom_compare' && (
