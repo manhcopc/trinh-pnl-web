@@ -564,8 +564,8 @@ export default function PnLMatrixTable({ records, mode, targetMonth, targetBranc
             <tr style={{ background: 'rgba(16, 185, 129, 0.15)' }}>
               <td className="sticky-col" style={{ padding: '1.5rem', fontWeight: 800, fontSize: '1.2rem', color: 'var(--revenue-color)', background: '#ecfdf5' }}>LỢI NHUẬN SAU BO</td>
               {columns.map(col => {
-                const val = reportData.columnTotals.ebit[col] + reportData.columnTotals.inventory[col] - reportData.columnTotals.boCost[col];
-                const baseVal = reportData.columnTotals.ebit['base'] + reportData.columnTotals.inventory['base'] - reportData.columnTotals.boCost['base'];
+                const val = reportData.columnTotals.ebit[col] - reportData.columnTotals.boCost[col];
+                const baseVal = reportData.columnTotals.ebit['base'] - reportData.columnTotals.boCost['base'];
                 return (
                   <React.Fragment key={col}>
                     <td onMouseEnter={() => setHoveredCol(col)} onMouseLeave={() => setHoveredCol(null)} style={{ ...getHoverStyle(col), padding: '1.5rem 1rem', textAlign: 'right', fontWeight: 800, fontSize: '1.2rem', color: 'var(--revenue-color)', borderLeft: col !== 'base' ? '1px dashed rgba(16, 185, 129, 0.3)' : 'none' }}>
@@ -583,7 +583,7 @@ export default function PnLMatrixTable({ records, mode, targetMonth, targetBranc
               {mode !== 'custom_compare' && (
                 <>
                   <td style={{ padding: '1.5rem 1.5rem', textAlign: 'right', fontWeight: 800, fontSize: '1.2rem', color: 'var(--revenue-color)', borderLeft: '1px dashed rgba(16, 185, 129, 0.3)' }}>
-                    {formatCurrency(reportData.columnTotals.ebit['Tổng'] + reportData.columnTotals.inventory['Tổng'] - reportData.columnTotals.boCost['Tổng'])}
+                    {formatCurrency(reportData.columnTotals.ebit['Tổng'] - reportData.columnTotals.boCost['Tổng'])}
                   </td>
                   <td style={{ padding: '1.5rem 1.5rem 1.5rem 0.5rem', textAlign: 'right', fontWeight: 700, fontSize: '0.9rem', color: 'var(--revenue-color)', opacity: 0.8 }}>-</td>
                 </>

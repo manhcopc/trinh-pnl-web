@@ -97,13 +97,13 @@ export default function PnLReportTable({ records, filters, categoryGroups }) {
       ebit: totalRevenue - totalExpense,
       totalInventory,
       boCost,
-      profitAfterBO: (totalRevenue - totalExpense) + totalInventory - boCost,
+      profitAfterBO: (totalRevenue - totalExpense) - boCost,
       prevTotalRevenue,
       prevTotalExpense,
       prevEbit: prevTotalRevenue - prevTotalExpense,
       prevTotalInventory,
       prevBoCost,
-      prevProfitAfterBO: (prevTotalRevenue - prevTotalExpense) + prevTotalInventory - prevBoCost,
+      prevProfitAfterBO: (prevTotalRevenue - prevTotalExpense) - prevBoCost,
     };
   }, [records, filters, categoryGroups]);
 
