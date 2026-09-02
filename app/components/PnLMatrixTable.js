@@ -246,20 +246,21 @@ export default function PnLMatrixTable({ records, mode, targetMonth, targetBranc
   const getHoverStyle = (col) => {
     const isPinned = pinnedCol === col;
     const isHovered = hoveredCol === col;
-    let bgColor = 'transparent';
-    if (isPinned) bgColor = 'rgba(59, 130, 246, 0.05)';
+    
+    const shadows = [];
+    if (isHovered) shadows.push('inset 0 0 0 9999px rgba(0,0,0,0.03)');
+    if (isPinned) shadows.push('inset 0 0 0 9999px rgba(59, 130, 246, 0.05)');
     
     return {
-      backgroundColor: bgColor,
-      boxShadow: isHovered ? 'inset 0 0 0 9999px rgba(0,0,0,0.03)' : 'none',
-      transition: 'box-shadow 0.2s ease, background-color 0.2s ease',
+      boxShadow: shadows.length > 0 ? shadows.join(', ') : 'none',
+      transition: 'box-shadow 0.2s ease',
     };
   };
 
   return (
     <div className="glass-panel animate-fade-in" style={{ padding: 0, overflow: 'hidden' }}>
       {/* Header Info */}
-      <div style={{ padding: '1.5rem', borderBottom: '1px solid var(--surface-border)', background: 'rgba(255,255,255,0.02)' }}>
+      <div style={{ padding: '1.5rem', borderBottom: '1px solid var(--surface-border)' }}>
         <h2 style={{ marginBottom: '0.25rem' }}>
           {mode === 'branch_compare' && 'So Sánh Chi Nhánh'}
           {mode === 'trend_analysis' && 'Phân Tích Xu Hướng'}
@@ -302,7 +303,7 @@ export default function PnLMatrixTable({ records, mode, targetMonth, targetBranc
                   <th onMouseEnter={() => setHoveredCol(col)} onMouseLeave={() => setHoveredCol(null)} style={{ ...getHoverStyle(col), padding: '0.5rem 1rem', color: 'var(--text-secondary)', fontWeight: 500, fontSize: '0.75rem', textAlign: 'right', width: '110px', minWidth: '110px', maxWidth: '110px', borderLeft: col !== 'base' ? '1px dashed rgba(255,255,255,0.1)' : 'none' }}>SỐ TIỀN</th>
                   <th onMouseEnter={() => setHoveredCol(col)} onMouseLeave={() => setHoveredCol(null)} style={{ ...getHoverStyle(col), padding: '0.5rem 0.5rem', color: 'var(--text-secondary)', fontWeight: 500, fontSize: '0.75rem', textAlign: 'right', width: '70px', minWidth: '70px', maxWidth: '70px' }}>% DT</th>
                   {mode === 'custom_compare' && col !== 'base' && (
-                    <th onMouseEnter={() => setHoveredCol(col)} onMouseLeave={() => setHoveredCol(null)} style={{ ...getHoverStyle(col), padding: '0.5rem 0.5rem', color: 'var(--text-secondary)', fontWeight: 600, fontSize: '0.75rem', textAlign: 'right', width: '80px', minWidth: '80px', maxWidth: '80px', background: 'rgba(255,255,255,0.02)' }}>Δ (%)</th>
+                    <th onMouseEnter={() => setHoveredCol(col)} onMouseLeave={() => setHoveredCol(null)} style={{ ...getHoverStyle(col), padding: '0.5rem 0.5rem', color: 'var(--text-secondary)', fontWeight: 600, fontSize: '0.75rem', textAlign: 'right', width: '80px', minWidth: '80px', maxWidth: '80px' }}>Δ (%)</th>
                   )}
                 </React.Fragment>
               ))}
@@ -408,7 +409,7 @@ export default function PnLMatrixTable({ records, mode, targetMonth, targetBranc
             })}
 
             {/* TỔNG DOANH THU */}
-            <tr style={{ '--row-bg': '#f8fafc', background: 'rgba(255,255,255,0.02)', borderTop: '2px solid var(--surface-border)' }}>
+            <tr style={{ '--row-bg': '#f8fafc', borderTop: '2px solid var(--surface-border)' }}>
               <td className="sticky-col" style={{ padding: '1.25rem 1.5rem', fontWeight: 800, fontSize: '1.05rem', background: '#f8fafc' }}>TỔNG DOANH THU</td>
               {columns.map(col => (
                 <React.Fragment key={col}>
@@ -438,7 +439,7 @@ export default function PnLMatrixTable({ records, mode, targetMonth, targetBranc
             </tr>
 
             {/* TỔNG CHI PHÍ */}
-            <tr style={{ '--row-bg': '#f8fafc', background: 'rgba(255,255,255,0.02)', borderBottom: '1px solid var(--surface-border)' }}>
+            <tr style={{ '--row-bg': '#f8fafc', borderBottom: '1px solid var(--surface-border)' }}>
               <td className="sticky-col" style={{ padding: '1.25rem 1.5rem', fontWeight: 800, fontSize: '1.05rem', background: '#f8fafc' }}>TỔNG CHI PHÍ</td>
               {columns.map(col => (
                 <React.Fragment key={col}>
@@ -500,7 +501,7 @@ export default function PnLMatrixTable({ records, mode, targetMonth, targetBranc
             </tr>
 
             {/* Tồn kho & Lợi nhuận cộng tồn kho */}
-            <tr style={{ '--row-bg': '#f8fafc', background: 'rgba(255,255,255,0.02)', borderTop: '1px solid var(--surface-border)' }}>
+            <tr style={{ '--row-bg': '#f8fafc', borderTop: '1px solid var(--surface-border)' }}>
               <td className="sticky-col" style={{ padding: '1.25rem 1.5rem', fontWeight: 700, fontSize: '1.05rem', background: '#f8fafc' }}>+ TỔNG TỒN KHO CUỐI KỲ</td>
               {columns.map(col => (
                 <React.Fragment key={col}>
@@ -554,7 +555,7 @@ export default function PnLMatrixTable({ records, mode, targetMonth, targetBranc
               )}
             </tr>
 
-            <tr style={{ '--row-bg': '#f8fafc', background: 'rgba(255,255,255,0.02)', borderTop: '1px solid var(--surface-border)', borderBottom: '1px solid var(--surface-border)' }}>
+            <tr style={{ '--row-bg': '#f8fafc', borderTop: '1px solid var(--surface-border)', borderBottom: '1px solid var(--surface-border)' }}>
               <td className="sticky-col" style={{ padding: '1.25rem 1.5rem', fontWeight: 700, fontSize: '1.05rem', background: '#f8fafc' }}>- CHI PHÍ BO CHIA CHO CỬA HÀNG</td>
               {columns.map(col => (
                 <React.Fragment key={col}>
