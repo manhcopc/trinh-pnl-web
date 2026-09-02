@@ -98,12 +98,14 @@ export default function PnLReportTable({ records, filters, categoryGroups }) {
       totalInventory,
       boCost,
       profitAfterBO: (totalRevenue - totalExpense) - boCost,
+      profitAfterBOWithInventory: (totalRevenue - totalExpense) + totalInventory - boCost,
       prevTotalRevenue,
       prevTotalExpense,
       prevEbit: prevTotalRevenue - prevTotalExpense,
       prevTotalInventory,
       prevBoCost,
       prevProfitAfterBO: (prevTotalRevenue - prevTotalExpense) - prevBoCost,
+      prevProfitAfterBOWithInventory: (prevTotalRevenue - prevTotalExpense) + prevTotalInventory - prevBoCost,
     };
   }, [records, filters, categoryGroups]);
 
@@ -270,6 +272,13 @@ export default function PnLReportTable({ records, filters, categoryGroups }) {
               <td style={{ padding: '1.5rem', textAlign: 'right', fontWeight: 800, fontSize: '1.3rem', color: 'var(--revenue-color)' }}>{formatCurrency(reportData.profitAfterBO)}</td>
               <td style={{ padding: '1.5rem', textAlign: 'right', fontWeight: 800, fontSize: '1.3rem', color: 'var(--revenue-color)' }}>-</td>
               <td style={{ padding: '1.5rem', textAlign: 'right', fontWeight: 800, fontSize: '1.3rem', color: getDeltaColor(reportData.profitAfterBO, reportData.prevProfitAfterBO, false) }}>{calculateDelta(reportData.profitAfterBO, reportData.prevProfitAfterBO)}</td>
+            </tr>
+
+            <tr style={{ background: 'rgba(16, 185, 129, 0.25)' }}>
+              <td className="sticky-col" style={{ padding: '1.5rem', fontWeight: 800, fontSize: '1.3rem', color: 'var(--primary-color)', background: '#d1fae5' }}>LỢI NHUẬN SAU BO (CÓ TỒN KHO)</td>
+              <td style={{ padding: '1.5rem', textAlign: 'right', fontWeight: 800, fontSize: '1.3rem', color: 'var(--primary-color)' }}>{formatCurrency(reportData.profitAfterBOWithInventory)}</td>
+              <td style={{ padding: '1.5rem', textAlign: 'right', fontWeight: 800, fontSize: '1.3rem', color: 'var(--primary-color)' }}>-</td>
+              <td style={{ padding: '1.5rem', textAlign: 'right', fontWeight: 800, fontSize: '1.3rem', color: getDeltaColor(reportData.profitAfterBOWithInventory, reportData.prevProfitAfterBOWithInventory, false) }}>{calculateDelta(reportData.profitAfterBOWithInventory, reportData.prevProfitAfterBOWithInventory)}</td>
             </tr>
 
           </tbody>

@@ -590,6 +590,35 @@ export default function PnLMatrixTable({ records, mode, targetMonth, targetBranc
               )}
             </tr>
 
+            <tr style={{ background: 'rgba(16, 185, 129, 0.25)' }}>
+              <td className="sticky-col" style={{ padding: '1.5rem', fontWeight: 800, fontSize: '1.2rem', color: 'var(--primary-color)', background: '#d1fae5' }}>LỢI NHUẬN SAU BO (CÓ TỒN KHO)</td>
+              {columns.map(col => {
+                const val = reportData.columnTotals.ebit[col] + reportData.columnTotals.inventory[col] - reportData.columnTotals.boCost[col];
+                const baseVal = reportData.columnTotals.ebit['base'] + reportData.columnTotals.inventory['base'] - reportData.columnTotals.boCost['base'];
+                return (
+                  <React.Fragment key={col}>
+                    <td onMouseEnter={() => setHoveredCol(col)} onMouseLeave={() => setHoveredCol(null)} style={{ ...getHoverStyle(col), padding: '1.5rem 1rem', textAlign: 'right', fontWeight: 800, fontSize: '1.2rem', color: 'var(--primary-color)', borderLeft: col !== 'base' ? '1px dashed rgba(16, 185, 129, 0.3)' : 'none' }}>
+                      {formatCurrency(val)}
+                    </td>
+                    <td onMouseEnter={() => setHoveredCol(col)} onMouseLeave={() => setHoveredCol(null)} style={{ ...getHoverStyle(col), padding: '1.5rem 0.5rem', textAlign: 'right', fontWeight: 700, fontSize: '0.9rem', color: 'var(--primary-color)', opacity: 0.8 }}>-</td>
+                    {mode === 'custom_compare' && col !== 'base' && (
+                      <td onMouseEnter={() => setHoveredCol(col)} onMouseLeave={() => setHoveredCol(null)} style={{ ...getHoverStyle(col), padding: '1.5rem 0.5rem', textAlign: 'right', background: 'rgba(16, 185, 129, 0.05)' }}>
+                        {renderDelta(val, baseVal, false)}
+                      </td>
+                    )}
+                  </React.Fragment>
+                );
+              })}
+              {mode !== 'custom_compare' && (
+                <>
+                  <td style={{ padding: '1.5rem 1.5rem', textAlign: 'right', fontWeight: 800, fontSize: '1.2rem', color: 'var(--primary-color)', borderLeft: '1px dashed rgba(16, 185, 129, 0.3)' }}>
+                    {formatCurrency(reportData.columnTotals.ebit['Tổng'] + reportData.columnTotals.inventory['Tổng'] - reportData.columnTotals.boCost['Tổng'])}
+                  </td>
+                  <td style={{ padding: '1.5rem 1.5rem 1.5rem 0.5rem', textAlign: 'right', fontWeight: 700, fontSize: '0.9rem', color: 'var(--primary-color)', opacity: 0.8 }}>-</td>
+                </>
+              )}
+            </tr>
+
           </tbody>
         </table>
       </div>
