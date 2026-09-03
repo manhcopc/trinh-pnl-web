@@ -226,20 +226,37 @@ export default function PnLMatrixTable({ records, mode, targetMonth, targetBranc
 
   const headerRef = useRef(null);
   const tableWrapperRef = useRef(null);
+  const col1Ref = useRef(null);
+  const subHeaderRef = useRef(null);
 
   useEffect(() => {
-    if (!headerRef.current || !tableWrapperRef.current) return;
-    const observer = new ResizeObserver((entries) => {
-      for (let entry of entries) {
-        if (entry.target === headerRef.current) {
-          const height = entry.target.getBoundingClientRect().height;
-          tableWrapperRef.current.style.setProperty('--first-row-height', `${height}px`);
+    if (!tableWrapperRef.current) return;
+    const observer = new ResizeObserver(() => {
+      if (headerRef.current) {
+        const height = headerRef.current.getBoundingClientRect().height;
+        tableWrapperRef.current.style.setProperty('--first-row-height', `${height}px`);
+      }
+      if (col1Ref.current) {
+        const w1 = col1Ref.current.getBoundingClientRect().width;
+        tableWrapperRef.current.style.setProperty('--sticky-w1', `${w1}px`);
+      }
+      if (pinnedCol && subHeaderRef.current) {
+        const ths = subHeaderRef.current.querySelectorAll('th');
+        if (ths.length >= 2) {
+          const w2 = ths[0].getBoundingClientRect().width;
+          const w3 = ths[1].getBoundingClientRect().width;
+          tableWrapperRef.current.style.setProperty('--sticky-w2', `${w2}px`);
+          tableWrapperRef.current.style.setProperty('--sticky-w3', `${w3}px`);
         }
       }
     });
-    observer.observe(headerRef.current);
+    
+    if (headerRef.current) observer.observe(headerRef.current);
+    if (col1Ref.current) observer.observe(col1Ref.current);
+    if (subHeaderRef.current) observer.observe(subHeaderRef.current);
+    
     return () => observer.disconnect();
-  }, [columns]);
+  }, [columns, pinnedCol]);
 
   if (!records || records.length === 0) return null;
 
@@ -278,7 +295,7 @@ export default function PnLMatrixTable({ records, mode, targetMonth, targetBranc
         <table className={`${pinnedCol ? "has-pinned-col" : ""} ${mode === 'custom_compare' ? "is-custom-compare" : ""}`.trim()} style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', minWidth: `${300 + columns.length * (mode === 'custom_compare' ? 220 : 180)}px` }}>
           <thead className="sticky-header">
             <tr ref={headerRef}>
-              <th rowSpan="2" className="sticky-col sticky-corner" style={{ padding: '1rem 1.5rem', color: 'var(--text-secondary)', fontWeight: 600, fontSize: '0.85rem' }}>CHỈ TIÊU</th>
+              <th ref={col1Ref} rowSpan="2" className="sticky-col sticky-corner" style={{ padding: '1rem 1.5rem', color: 'var(--text-secondary)', fontWeight: 600, fontSize: '0.85rem' }}>CHỈ TIÊU</th>
               {columns.map(col => (
                 <th colSpan={getColSpan(col)} key={col} onMouseEnter={() => setHoveredCol(col)} onMouseLeave={() => setHoveredCol(null)} style={{ ...getHoverStyle(col), position: 'relative', height: '48px', padding: '0.75rem 2rem 0.75rem 1rem', color: col === 'base' || pinnedCol === col ? 'var(--primary-color)' : 'var(--text-secondary)', fontWeight: col === 'base' || pinnedCol === col ? 700 : 600, fontSize: '0.85rem', textAlign: 'center', borderBottom: '1px solid var(--surface-border)', borderLeft: col !== 'base' ? '1px dashed rgba(255,255,255,0.1)' : 'none' }}>
                   {formatColumnHeader(col)}
@@ -297,7 +314,7 @@ export default function PnLMatrixTable({ records, mode, targetMonth, targetBranc
                 </th>
               )}
             </tr>
-            <tr className="sub-header">
+            <tr className="sub-header" ref={subHeaderRef}>
               {columns.map(col => (
                 <React.Fragment key={`${col}-sub`}>
                   <th onMouseEnter={() => setHoveredCol(col)} onMouseLeave={() => setHoveredCol(null)} style={{ ...getHoverStyle(col), padding: '0.5rem 1rem', color: 'var(--text-secondary)', fontWeight: 500, fontSize: '0.75rem', textAlign: 'right', width: '110px', minWidth: '110px', maxWidth: '110px', borderLeft: col !== 'base' ? '1px dashed rgba(255,255,255,0.1)' : 'none' }}>SỐ TIỀN</th>
