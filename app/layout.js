@@ -7,6 +7,7 @@ export const metadata = {
 
 import Navigation from './components/Navigation';
 import AuthProvider from './components/AuthProvider';
+import LockScreen from './components/LockScreen';
 
 export default function RootLayout({ children }) {
   return (
@@ -19,6 +20,7 @@ export default function RootLayout({ children }) {
               {children}
             </main>
           </div>
+          <LockScreen />
         </AuthProvider>
       </body>
     </html>

@@ -1,13 +1,18 @@
 'use client';
 import { useState } from 'react';
 import { useMasterData } from '@/hooks/useMasterData';
+import { useSession } from 'next-auth/react';
 
 export default function SettingsPage() {
+  const { data: session } = useSession();
   const { branches, categoryGroups, loading, error, refresh, updateCacheLocally } = useMasterData();
   
   const [newBranch, setNewBranch] = useState('');
   const [newCatName, setNewCatName] = useState('');
   const [newCatGroup, setNewCatGroup] = useState('');
+  const [oldPin, setOldPin] = useState('');
+  const [newPin, setNewPin] = useState('');
+  const [confirmPin, setConfirmPin] = useState('');
   
   const [actionLoading, setActionLoading] = useState(false);
   const [message, setMessage] = useState('');
@@ -15,6 +20,40 @@ export default function SettingsPage() {
   const showMessage = (msg, isError = false) => {
     setMessage({ text: msg, isError });
     setTimeout(() => setMessage(''), 4000);
+  };
+
+  
+  const handleChangePin = async (e) => {
+    e.preventDefault();
+    if (newPin !== confirmPin) {
+      return showMessage('Mã PIN xác nhận không khớp', true);
+    }
+    if (newPin.length !== 6 || oldPin.length !== 6) {
+      return showMessage('Mã PIN phải gồm đúng 6 chữ số', true);
+    }
+
+    setActionLoading(true);
+    try {
+      const res = await fetch('/api/auth/pin', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'change', oldPin, newPin })
+      });
+      const data = await res.json();
+      
+      if (data.success) {
+        showMessage('Đã đổi Mã PIN thành công!');
+        setOldPin('');
+        setNewPin('');
+        setConfirmPin('');
+      } else {
+        showMessage(data.error || 'Lỗi khi đổi mã PIN', true);
+      }
+    } catch (err) {
+      showMessage('Lỗi kết nối', true);
+    } finally {
+      setActionLoading(false);
+    }
   };
 
   const handleAddBranch = async (e) => {
@@ -128,6 +167,57 @@ export default function SettingsPage() {
       ) : (
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '1.5rem' }}>
           
+          
+          {/* Form Đổi Mã PIN */}
+          <div className="glass-panel" style={{ padding: '1.5rem' }}>
+            <h3 style={{ marginBottom: '1rem', borderBottom: '1px solid var(--surface-border)', paddingBottom: '0.5rem' }}>Bảo Mật - Đổi Mã PIN</h3>
+            <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem', marginBottom: '1.5rem' }}>
+              Tài khoản: <strong>{session?.user?.email}</strong><br/>
+              Mã PIN này được dùng để mở khoá khi ứng dụng tự động khoá sau 30 phút treo máy.
+            </p>
+            <form onSubmit={handleChangePin}>
+              <div className="form-group">
+                <label>Mã PIN Cũ (Mặc định: 123456)</label>
+                <input 
+                  type="password" 
+                  className="form-control" 
+                  maxLength="6"
+                  value={oldPin} 
+                  onChange={e => setOldPin(e.target.value.replace(/\D/g, ''))} 
+                  placeholder="••••••"
+                  disabled={actionLoading}
+                />
+              </div>
+              <div className="form-group">
+                <label>Mã PIN Mới (6 số)</label>
+                <input 
+                  type="password" 
+                  className="form-control" 
+                  maxLength="6"
+                  value={newPin} 
+                  onChange={e => setNewPin(e.target.value.replace(/\D/g, ''))} 
+                  placeholder="••••••"
+                  disabled={actionLoading}
+                />
+              </div>
+              <div className="form-group">
+                <label>Xác nhận Mã PIN Mới</label>
+                <input 
+                  type="password" 
+                  className="form-control" 
+                  maxLength="6"
+                  value={confirmPin} 
+                  onChange={e => setConfirmPin(e.target.value.replace(/\D/g, ''))} 
+                  placeholder="••••••"
+                  disabled={actionLoading}
+                />
+              </div>
+              <button type="submit" className="btn btn-primary" style={{ width: '100%' }} disabled={!oldPin || !newPin || !confirmPin || actionLoading}>
+                {actionLoading ? 'Đang đổi...' : 'Đổi Mã Khoá'}
+              </button>
+            </form>
+          </div>
+
           {/* Form Thêm Cơ Sở */}
           <div className="glass-panel" style={{ padding: '1.5rem' }}>
             <h3 style={{ marginBottom: '1rem', borderBottom: '1px solid var(--surface-border)', paddingBottom: '0.5rem' }}>Quản lý Cơ Sở</h3>

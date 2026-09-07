@@ -65,3 +65,4 @@ Dựa trên quyết định sử dụng phương án chia nhỏ thành 3 trang v
 2. Dùng tính năng Responsive của DevTools thu nhỏ về màn hình điện thoại (iPhone) để kiểm tra xem thanh điều hướng có chuyển xuống dưới cùng (Bottom Bar) không.
 3. Click qua lại giữa các trang để đảm bảo Next.js Client-side routing hoạt động mượt mà (không load lại cả trang).
 4. Thử nhập một giao dịch ở `/add`, sau đó chuyển sang `/transactions` và `/` để kiểm tra dữ liệu có được cập nhật đúng hay không.
+5. Không thể nhập dấu âm vào trong form, và các thông báo lỗi (Error Toast) hiển thị đúng khi nhập sai định dạng.

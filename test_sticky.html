@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html>
+<head>
+<style>
+.table-wrapper {
+  height: 200px;
+  overflow: auto;
+}
+table { border-collapse: collapse; width: 100%; }
+thead { position: sticky; top: 0; z-index: 20; background: white; }
+th, td { border: 1px solid black; padding: 10px; }
+.sticky-col { position: sticky; left: 0; background: #eee; z-index: 10; }
+.sticky-corner { position: sticky; left: 0; z-index: 30; background: #ccc; }
+</style>
+</head>
+<body>
+<div class="table-wrapper">
+  <table>
+    <thead>
+      <tr>
+        <th rowspan="2" class="sticky-corner">Corner</th>
+        <th colspan="2">Group 1</th>
+      </tr>
+      <tr>
+        <th>Sub 1</th>
+        <th>Sub 2</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr><td class="sticky-col">Row 1</td><td>Data</td><td>Data</td></tr>
+      <tr><td class="sticky-col">Row 2</td><td>Data</td><td>Data</td></tr>
+      <tr><td class="sticky-col">Row 3</td><td>Data</td><td>Data</td></tr>
+      <tr><td class="sticky-col">Row 4</td><td>Data</td><td>Data</td></tr>
+      <tr><td class="sticky-col">Row 5</td><td>Data</td><td>Data</td></tr>
+      <tr><td class="sticky-col">Row 6</td><td>Data</td><td>Data</td></tr>
+      <tr><td class="sticky-col">Row 7</td><td>Data</td><td>Data</td></tr>
+      <tr><td class="sticky-col">Row 8</td><td>Data</td><td>Data</td></tr>
+      <tr><td class="sticky-col">Row 9</td><td>Data</td><td>Data</td></tr>
+      <tr><td class="sticky-col">Row 10</td><td>Data</td><td>Data</td></tr>
+    </tbody>
+  </table>
+</div>
+</body>
+</html>
