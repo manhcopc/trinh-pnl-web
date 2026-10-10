@@ -41,3 +41,14 @@ yarn-error.log*
 next-env.d.ts
 
 /node_modules/
+
+# sensitive data & uploads
+.agent/
+*.xlsx
+*.xls
+*.csv
+pnl_data.json
+*.html
+*.patch
+fix_*.js
+add_hover.js
